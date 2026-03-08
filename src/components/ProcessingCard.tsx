@@ -11,27 +11,27 @@ const ProcessingCard = ({ title, enabled, onToggle, children }: ProcessingCardPr
   return (
     <div
       className={cn(
-        "rounded-lg border p-4 transition-all duration-200",
+        "rounded-md border p-3 transition-all duration-200",
         enabled
-          ? "border-primary/40 bg-primary/5 shadow-glow"
-          : "border-border bg-card"
+          ? "border-primary/30 bg-primary/5"
+          : "border-border bg-secondary/30"
       )}
     >
       <div
         className="flex items-center justify-between cursor-pointer select-none"
         onClick={onToggle}
       >
-        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-foreground">{title}</h2>
         <div
           className={cn(
-            "w-3 h-3 rounded-full transition-colors",
-            enabled ? "bg-primary" : "bg-muted"
+            "w-2.5 h-2.5 rounded-full transition-colors",
+            enabled ? "bg-primary shadow-glow" : "bg-muted-foreground/30"
           )}
         />
       </div>
 
       {enabled && children && (
-        <div className="mt-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+        <div className="mt-3 space-y-2.5 border-t border-border/50 pt-3" onClick={(e) => e.stopPropagation()}>
           {children}
         </div>
       )}
