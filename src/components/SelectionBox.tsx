@@ -101,7 +101,7 @@ const SelectionBox = ({ containerRef }: SelectionBoxProps) => {
 
   return (
     <div
-      className="absolute border-2 border-sidebar-primary/80 bg-sidebar-primary/10 backdrop-blur-[1px]"
+      className="absolute border-2 border-dashed border-sidebar-primary/80"
       style={{
         left: box.x,
         top: box.y,
