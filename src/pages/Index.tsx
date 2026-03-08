@@ -20,7 +20,7 @@ const Index = () => {
           <span className="text-xs font-semibold uppercase tracking-[0.15em] text-foreground">
             Vision Inspector
           </span>
-          <span className="text-[10px] font-mono text-muted-foreground ml-2">v1.0</span>
+          <span className="text-[10px] font-mono text-muted-foreground ml-2">​</span>
         </div>
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${imageSrc ? 'bg-status-online animate-pulse-dot' : 'bg-status-offline'}`} />
@@ -52,8 +52,8 @@ const Index = () => {
             <ProcessingCard
               title="Classic Processing"
               enabled={config.classic.enabled}
-              onToggle={() => updateConfig("classic.enabled", !config.classic.enabled)}
-            >
+              onToggle={() => updateConfig("classic.enabled", !config.classic.enabled)}>
+              
               <InspectionSlider label="Low H" value={config.classic.lowH} onChange={(v) => updateConfig("classic.lowH", v)} />
               <InspectionSlider label="Low S" value={config.classic.lowS} onChange={(v) => updateConfig("classic.lowS", v)} />
               <InspectionSlider label="Low V" value={config.classic.lowV} onChange={(v) => updateConfig("classic.lowV", v)} />
@@ -66,23 +66,23 @@ const Index = () => {
             <ProcessingCard
               title="YOLO Detector"
               enabled={config.yolo.enabled}
-              onToggle={() => updateConfig("yolo.enabled", !config.yolo.enabled)}
-            >
+              onToggle={() => updateConfig("yolo.enabled", !config.yolo.enabled)}>
+              
               <p className="text-[10px] font-mono text-muted-foreground">Running object detection…</p>
             </ProcessingCard>
 
             <ProcessingCard
               title="Segmentation"
               enabled={config.seg.enabled}
-              onToggle={() => updateConfig("seg.enabled", !config.seg.enabled)}
-            >
+              onToggle={() => updateConfig("seg.enabled", !config.seg.enabled)}>
+              
               <p className="text-[10px] font-mono text-muted-foreground">Segmentation active…</p>
             </ProcessingCard>
           </div>
         </aside>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Index;
