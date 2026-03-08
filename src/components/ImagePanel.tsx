@@ -12,8 +12,8 @@ const ImagePanel = ({ title, imgSrc }: ImagePanelProps) => {
         </h2>
         <div className={`w-1.5 h-1.5 rounded-full ${imgSrc ? 'bg-status-online' : 'bg-muted-foreground'}`} />
       </div>
-      <div className="flex-1 min-h-0 flex items-center justify-center">
-        <div className="aspect-square h-full max-w-full rounded-md bg-card border border-border overflow-hidden flex items-center justify-center">
+      <div className="flex-1 min-h-0 flex items-center justify-center overflow-hidden">
+        <div className="aspect-square w-full max-h-full rounded-md bg-card border border-border overflow-hidden flex items-center justify-center">
           {imgSrc ? (
             <img
               src={imgSrc}
