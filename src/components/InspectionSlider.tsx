@@ -1,5 +1,4 @@
 import { Slider } from "@/components/ui/slider";
-import { Label } from "@/components/ui/label";
 
 interface InspectionSliderProps {
   label: string;
@@ -11,10 +10,10 @@ interface InspectionSliderProps {
 
 const InspectionSlider = ({ label, value, onChange, max = 255, min = 0 }: InspectionSliderProps) => {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <Label className="text-xs text-muted-foreground">{label}</Label>
-        <span className="text-xs font-mono text-primary">{value}</span>
+        <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{label}</span>
+        <span className="text-[10px] font-mono text-primary tabular-nums">{value}</span>
       </div>
       <Slider
         value={[value]}

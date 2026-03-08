@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -58,6 +62,11 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         glow: "hsl(var(--glow))",
+        status: {
+          online: "hsl(var(--status-online))",
+          offline: "hsl(var(--status-offline))",
+        },
+        warning: "hsl(var(--warning))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -65,7 +74,8 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        glow: "0 0 20px hsl(var(--glow) / 0.15)",
+        glow: "0 0 15px hsl(var(--glow) / 0.1)",
+        "glow-strong": "0 0 25px hsl(var(--glow) / 0.2)",
       },
       keyframes: {
         "accordion-down": {
@@ -76,10 +86,15 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        pulse_dot: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.4" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-dot": "pulse_dot 2s ease-in-out infinite",
       },
     },
   },

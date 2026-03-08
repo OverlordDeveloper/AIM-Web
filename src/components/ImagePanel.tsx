@@ -5,11 +5,14 @@ interface ImagePanelProps {
 
 const ImagePanel = ({ title, imgSrc }: ImagePanelProps) => {
   return (
-    <div className="w-full flex flex-col items-center gap-3">
-      <h2 className="text-lg font-semibold text-foreground tracking-wide">
-        {title}
-      </h2>
-      <div className="aspect-square w-full rounded-xl bg-background border-2 border-primary/30 shadow-glow overflow-hidden flex items-center justify-center">
+    <div className="w-full flex flex-col gap-2">
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-foreground">
+          {title}
+        </h2>
+        <div className={`w-1.5 h-1.5 rounded-full ${imgSrc ? 'bg-status-online' : 'bg-muted-foreground'}`} />
+      </div>
+      <div className="aspect-square w-full rounded-md bg-card border border-border overflow-hidden flex items-center justify-center">
         {imgSrc ? (
           <img
             src={imgSrc}
@@ -17,7 +20,12 @@ const ImagePanel = ({ title, imgSrc }: ImagePanelProps) => {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="text-muted-foreground text-sm">No feed</div>
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-10 h-10 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
+              <span className="text-muted-foreground/40 text-lg">⬜</span>
+            </div>
+            <span className="text-[10px] font-mono text-muted-foreground">NO SIGNAL</span>
+          </div>
         )}
       </div>
     </div>
