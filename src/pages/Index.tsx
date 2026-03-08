@@ -35,7 +35,7 @@ const Index = () => {
         <main className="flex-1 overflow-hidden flex flex-col p-4 gap-3 bg-background">
           <div className="flex-1 grid grid-cols-2 gap-4 min-h-0">
             <ImagePanel title="Live Feed" imgSrc={imageSrc} />
-            <ImagePanel title="Mask" imgSrc={imageSrc} />
+            <ImagePanel title="Mask" imgSrc={imageSrc} showSelection={config.seg.enabled} />
           </div>
         </main>
 
