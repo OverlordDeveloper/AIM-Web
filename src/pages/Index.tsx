@@ -3,7 +3,7 @@ import InspectionSlider from "@/components/InspectionSlider";
 import ImagePanel from "@/components/ImagePanel";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useInspectionConfig } from "@/hooks/useInspectionConfig";
-import { Activity, Settings, ChevronDown } from "lucide-react";
+import { Activity, Settings, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 const WS_URL = "ws://127.0.0.1:8000/api/ws/live";
