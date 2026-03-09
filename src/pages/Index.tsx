@@ -3,13 +3,15 @@ import InspectionSlider from "@/components/InspectionSlider";
 import ImagePanel from "@/components/ImagePanel";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useInspectionConfig } from "@/hooks/useInspectionConfig";
-import { Activity, Settings } from "lucide-react";
+import { Activity, Settings, ChevronDown } from "lucide-react";
+import { useState } from "react";
 
 const WS_URL = "ws://127.0.0.1:8000/api/ws/live";
 
 const Index = () => {
   const imageSrc = useWebSocket(WS_URL);
   const { config, updateConfig } = useInspectionConfig();
+  const [controlsOpen, setControlsOpen] = useState(true);
 
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden">
@@ -41,14 +43,18 @@ const Index = () => {
 
         {/* Right Sidebar - Controls */}
         <aside className="w-64 shrink-0 border-l border-sidebar-border bg-sidebar flex flex-col">
-          <div className="px-4 py-3 border-b border-sidebar-border flex items-center gap-2">
+          <div
+            className="px-4 py-3 border-b border-sidebar-border flex items-center gap-2 cursor-pointer select-none hover:bg-sidebar-accent/50 transition-colors"
+            onClick={() => setControlsOpen(!controlsOpen)}
+          >
             <Settings className="w-3.5 h-3.5 text-sidebar-primary" />
             <span className="text-[10px] font-mono uppercase tracking-widest text-sidebar-foreground/60">
               Controls
             </span>
+            <ChevronDown className={`w-3 h-3 text-sidebar-foreground/40 ml-auto transition-transform duration-200 ${controlsOpen ? '' : '-rotate-90'}`} />
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {controlsOpen && <div className="flex-1 overflow-y-auto p-3 space-y-2">
             <ProcessingCard
               title="Classic Processing"
               enabled={config.classic.enabled}
@@ -78,7 +84,8 @@ const Index = () => {
               
               <p className="text-[10px] font-mono text-muted-foreground">Segmentation active…</p>
             </ProcessingCard>
-          </div>
+          </div>}
+
         </aside>
       </div>
     </div>);
