@@ -84,7 +84,8 @@ const Index = () => {
               
               <p className="text-[10px] font-mono text-muted-foreground">Segmentation active…</p>
             </ProcessingCard>
-          </div>
+          </div>}
+
         </aside>
       </div>
     </div>);
