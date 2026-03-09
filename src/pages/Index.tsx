@@ -43,14 +43,18 @@ const Index = () => {
 
         {/* Right Sidebar - Controls */}
         <aside className="w-64 shrink-0 border-l border-sidebar-border bg-sidebar flex flex-col">
-          <div className="px-4 py-3 border-b border-sidebar-border flex items-center gap-2">
+          <div
+            className="px-4 py-3 border-b border-sidebar-border flex items-center gap-2 cursor-pointer select-none hover:bg-sidebar-accent/50 transition-colors"
+            onClick={() => setControlsOpen(!controlsOpen)}
+          >
             <Settings className="w-3.5 h-3.5 text-sidebar-primary" />
             <span className="text-[10px] font-mono uppercase tracking-widest text-sidebar-foreground/60">
               Controls
             </span>
+            <ChevronDown className={`w-3 h-3 text-sidebar-foreground/40 ml-auto transition-transform duration-200 ${controlsOpen ? '' : '-rotate-90'}`} />
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {controlsOpen && <div className="flex-1 overflow-y-auto p-3 space-y-2">
             <ProcessingCard
               title="Classic Processing"
               enabled={config.classic.enabled}
