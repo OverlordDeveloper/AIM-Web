@@ -42,50 +42,55 @@ const Index = () => {
         </main>
 
         {/* Right Sidebar - Controls */}
-        <aside className="w-64 shrink-0 border-l border-sidebar-border bg-sidebar flex flex-col">
+        <aside className={`shrink-0 border-l border-sidebar-border bg-sidebar flex flex-col transition-all duration-300 overflow-hidden ${controlsOpen ? 'w-64' : 'w-10'}`}>
           <div
-            className="px-4 py-3 border-b border-sidebar-border flex items-center gap-2 cursor-pointer select-none hover:bg-sidebar-accent/50 transition-colors"
+            className="px-2.5 py-3 border-b border-sidebar-border flex items-center gap-2 cursor-pointer select-none hover:bg-sidebar-accent/50 transition-colors"
             onClick={() => setControlsOpen(!controlsOpen)}
           >
-            <Settings className="w-3.5 h-3.5 text-sidebar-primary" />
-            <span className="text-[10px] font-mono uppercase tracking-widest text-sidebar-foreground/60">
-              Controls
-            </span>
-            <ChevronDown className={`w-3 h-3 text-sidebar-foreground/40 ml-auto transition-transform duration-200 ${controlsOpen ? '' : '-rotate-90'}`} />
+            <Settings className="w-3.5 h-3.5 text-sidebar-primary shrink-0" />
+            {controlsOpen && (
+              <>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-sidebar-foreground/60 whitespace-nowrap">
+                  Controls
+                </span>
+                <ChevronRight className="w-3 h-3 text-sidebar-foreground/40 ml-auto shrink-0" />
+              </>
+            )}
           </div>
 
-          {controlsOpen && <div className="flex-1 overflow-y-auto p-3 space-y-2">
-            <ProcessingCard
-              title="Classic Processing"
-              enabled={config.classic.enabled}
-              onToggle={() => updateConfig("classic.enabled", !config.classic.enabled)}>
-              
-              <InspectionSlider label="Low H" value={config.classic.lowH} onChange={(v) => updateConfig("classic.lowH", v)} />
-              <InspectionSlider label="Low S" value={config.classic.lowS} onChange={(v) => updateConfig("classic.lowS", v)} />
-              <InspectionSlider label="Low V" value={config.classic.lowV} onChange={(v) => updateConfig("classic.lowV", v)} />
-              <InspectionSlider label="High H" value={config.classic.highH} onChange={(v) => updateConfig("classic.highH", v)} />
-              <InspectionSlider label="High S" value={config.classic.highS} onChange={(v) => updateConfig("classic.highS", v)} />
-              <InspectionSlider label="High V" value={config.classic.highV} onChange={(v) => updateConfig("classic.highV", v)} />
-              <InspectionSlider label="Size" value={config.classic.size} onChange={(v) => updateConfig("classic.size", v)} max={200} />
-            </ProcessingCard>
+          {controlsOpen && (
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              <ProcessingCard
+                title="Classic Processing"
+                enabled={config.classic.enabled}
+                onToggle={() => updateConfig("classic.enabled", !config.classic.enabled)}>
+                
+                <InspectionSlider label="Low H" value={config.classic.lowH} onChange={(v) => updateConfig("classic.lowH", v)} />
+                <InspectionSlider label="Low S" value={config.classic.lowS} onChange={(v) => updateConfig("classic.lowS", v)} />
+                <InspectionSlider label="Low V" value={config.classic.lowV} onChange={(v) => updateConfig("classic.lowV", v)} />
+                <InspectionSlider label="High H" value={config.classic.highH} onChange={(v) => updateConfig("classic.highH", v)} />
+                <InspectionSlider label="High S" value={config.classic.highS} onChange={(v) => updateConfig("classic.highS", v)} />
+                <InspectionSlider label="High V" value={config.classic.highV} onChange={(v) => updateConfig("classic.highV", v)} />
+                <InspectionSlider label="Size" value={config.classic.size} onChange={(v) => updateConfig("classic.size", v)} max={200} />
+              </ProcessingCard>
 
-            <ProcessingCard
-              title="YOLO Detector"
-              enabled={config.yolo.enabled}
-              onToggle={() => updateConfig("yolo.enabled", !config.yolo.enabled)}>
-              
-              <p className="text-[10px] font-mono text-muted-foreground">Running object detection…</p>
-            </ProcessingCard>
+              <ProcessingCard
+                title="YOLO Detector"
+                enabled={config.yolo.enabled}
+                onToggle={() => updateConfig("yolo.enabled", !config.yolo.enabled)}>
+                
+                <p className="text-[10px] font-mono text-muted-foreground">Running object detection…</p>
+              </ProcessingCard>
 
-            <ProcessingCard
-              title="Segmentation"
-              enabled={config.seg.enabled}
-              onToggle={() => updateConfig("seg.enabled", !config.seg.enabled)}>
-              
-              <p className="text-[10px] font-mono text-muted-foreground">Segmentation active…</p>
-            </ProcessingCard>
-          </div>}
-
+              <ProcessingCard
+                title="Segmentation"
+                enabled={config.seg.enabled}
+                onToggle={() => updateConfig("seg.enabled", !config.seg.enabled)}>
+                
+                <p className="text-[10px] font-mono text-muted-foreground">Segmentation active…</p>
+              </ProcessingCard>
+            </div>
+          )}
         </aside>
       </div>
     </div>);
