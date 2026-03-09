@@ -11,6 +11,7 @@ const WS_URL = "ws://127.0.0.1:8000/api/ws/live";
 const Index = () => {
   const imageSrc = useWebSocket(WS_URL);
   const { config, updateConfig } = useInspectionConfig();
+  const [controlsOpen, setControlsOpen] = useState(true);
 
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden">
