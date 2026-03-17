@@ -43,26 +43,25 @@ const Index = () => {
           <span className="text-xs font-semibold uppercase tracking-[0.15em] text-foreground">
             Vision Inspector
           </span>
-          <span className="text-[10px] font-mono text-muted-foreground ml-2">​</span>
         </div>
-        <div className="flex items-center gap-3">
-          <CameraSettingsPanel />
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${connected ? 'bg-status-online animate-pulse-dot' : 'bg-status-offline'}`} />
-            <span className="text-[10px] font-mono text-muted-foreground">
-              {connected ? 'CONNECTED' : 'OFFLINE'}
-            </span>
-          </div>
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-status-online animate-pulse-dot' : 'bg-status-offline'}`} />
+          <span className="text-[10px] font-mono text-muted-foreground">
+            {connected ? 'CONNECTED' : 'OFFLINE'}
+          </span>
         </div>
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Main Content - images take priority */}
-        <main className="flex-1 overflow-hidden flex flex-col p-4 gap-3 bg-background">
-          <div className="flex-1 grid grid-cols-2 gap-4 min-h-0">
+        {/* Main Content */}
+        <main className="flex-1 overflow-hidden flex flex-col bg-background">
+          <div className="flex-1 grid grid-cols-2 gap-4 p-4 min-h-0">
             <ImagePanel title="Live Feed" imgSrc={live} />
-            <ImagePanel title="Mask"imgSrc={mask} showSelection={config.seg.enabled}  onSelectionCommit={handleSelectionCommit}/>
+            <ImagePanel title="Mask" imgSrc={mask} showSelection={config.seg.enabled} onSelectionCommit={handleSelectionCommit} />
           </div>
+
+          {/* Bottom camera settings bar */}
+          <CameraSettingsPanel />
         </main>
 
         {/* Right Sidebar - Controls */}
