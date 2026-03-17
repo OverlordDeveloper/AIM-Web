@@ -1,7 +1,7 @@
 import ProcessingCard from "@/components/ProcessingCard";
 import InspectionSlider from "@/components/InspectionSlider";
 import ImagePanel from "@/components/ImagePanel";
-import CameraSettingsDialog from "@/components/CameraSettingsDialog";
+import CameraSettingsPanel from "@/components/CameraSettingsDialog";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useInspectionConfig } from "@/hooks/useInspectionConfig";
 import { Activity, Settings, ChevronRight } from "lucide-react";
@@ -46,7 +46,7 @@ const Index = () => {
           <span className="text-[10px] font-mono text-muted-foreground ml-2">​</span>
         </div>
         <div className="flex items-center gap-3">
-          <CameraSettingsDialog />
+          <CameraSettingsPanel />
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${connected ? 'bg-status-online animate-pulse-dot' : 'bg-status-offline'}`} />
             <span className="text-[10px] font-mono text-muted-foreground">
