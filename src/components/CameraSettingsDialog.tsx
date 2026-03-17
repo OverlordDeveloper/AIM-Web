@@ -1,4 +1,4 @@
-import { Settings2, ChevronDown, ChevronUp } from "lucide-react";
+import { Settings2, ChevronUp, ChevronDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import InspectionSlider from "@/components/InspectionSlider";
 import { Input } from "@/components/ui/input";
@@ -54,38 +54,26 @@ const CameraSettingsPanel = () => {
     : RESOLUTION_PRESETS.find((p) => p.w === settings.width && p.h === settings.height)?.label ?? "Custom";
 
   return (
-    <>
-      {/* Toggle button for the header */}
+    <div className="shrink-0 border-t border-border bg-card">
+      {/* Slim toggle bar */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
+        className="w-full flex items-center gap-2 px-4 py-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors cursor-pointer"
       >
-        <Settings2 className="w-3.5 h-3.5" />
-        Camera
-        {open ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+        <Settings2 className="w-3 h-3" />
+        <span>Camera</span>
+        {open ? <ChevronDown className="w-3 h-3 ml-auto" /> : <ChevronUp className="w-3 h-3 ml-auto" />}
       </button>
 
-      {/* Bottom drawer panel */}
+      {/* Expandable settings */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border transition-transform duration-300 ease-in-out ${
-          open ? "translate-y-0" : "translate-y-full"
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? "max-h-40" : "max-h-0"
         }`}
       >
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-foreground/60">
-            Camera Settings
-          </span>
-          <button
-            onClick={() => setOpen(false)}
-            className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-          >
-            <ChevronDown className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="px-4 py-3 flex gap-6 overflow-x-auto">
+        <div className="px-4 py-2.5 flex gap-6 overflow-x-auto border-t border-border">
           {/* Resolution */}
-          <div className="space-y-2 min-w-[160px]">
+          <div className="space-y-1.5 min-w-[140px]">
             <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Resolution</span>
             <Select value={currentPreset} onValueChange={handlePreset}>
               <SelectTrigger className="h-7 text-xs font-mono bg-secondary border-border">
@@ -100,49 +88,27 @@ const CameraSettingsPanel = () => {
               </SelectContent>
             </Select>
             {customRes && (
-              <div className="flex items-center gap-2">
-                <div className="flex-1 space-y-1">
-                  <span className="text-[9px] font-mono uppercase text-muted-foreground">W</span>
-                  <Input
-                    type="number"
-                    value={settings.width}
-                    onChange={(e) => update("width", Number(e.target.value))}
-                    className="h-7 text-xs font-mono bg-secondary border-border"
-                  />
-                </div>
-                <span className="text-muted-foreground text-xs mt-4">×</span>
-                <div className="flex-1 space-y-1">
-                  <span className="text-[9px] font-mono uppercase text-muted-foreground">H</span>
-                  <Input
-                    type="number"
-                    value={settings.height}
-                    onChange={(e) => update("height", Number(e.target.value))}
-                    className="h-7 text-xs font-mono bg-secondary border-border"
-                  />
-                </div>
+              <div className="flex items-center gap-1.5">
+                <Input
+                  type="number"
+                  value={settings.width}
+                  onChange={(e) => update("width", Number(e.target.value))}
+                  className="h-6 text-[10px] font-mono bg-secondary border-border w-16"
+                />
+                <span className="text-muted-foreground text-[10px]">×</span>
+                <Input
+                  type="number"
+                  value={settings.height}
+                  onChange={(e) => update("height", Number(e.target.value))}
+                  className="h-6 text-[10px] font-mono bg-secondary border-border w-16"
+                />
               </div>
             )}
           </div>
 
-          {/* Exposure Time — input + slider */}
-          <div className="space-y-1 min-w-[200px]">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Exposure Time</span>
-              <span className="text-[10px] font-mono text-muted-foreground">ms</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                min={1}
-                max={1000}
-                value={settings.exposureTime}
-                onChange={(e) => update("exposureTime", Math.min(1000, Math.max(1, Number(e.target.value))))}
-                className="h-7 w-16 text-xs font-mono bg-secondary border-border tabular-nums"
-              />
-              <div className="flex-1">
-                <InspectionSlider label="" value={settings.exposureTime} onChange={(v) => update("exposureTime", v)} max={1000} min={1} />
-              </div>
-            </div>
+          {/* Exposure */}
+          <div className="min-w-[150px]">
+            <InspectionSlider label="Exposure (ms)" value={settings.exposureTime} onChange={(v) => update("exposureTime", v)} max={1000} min={1} />
           </div>
 
           {/* Gain */}
@@ -166,7 +132,7 @@ const CameraSettingsPanel = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
