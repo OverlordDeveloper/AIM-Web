@@ -6,12 +6,32 @@ import { useInspectionConfig } from "@/hooks/useInspectionConfig";
 import { Activity, Settings, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
-const WS_URL = "ws://127.0.0.1:8000/api/ws/live";
+const WS_URL = "ws://127.0.0.1:18080/api/ws/live";
 
 const Index = () => {
-  const imageSrc = useWebSocket(WS_URL);
+  const { live, mask, connected, sendJson } = useWebSocket(WS_URL);
   const { config, updateConfig } = useInspectionConfig();
   const [controlsOpen, setControlsOpen] = useState(true);
+  
+  const handleSelectionCommit = (box: { x: number; y: number; w: number; h: number }) => {
+    sendJson({
+      type: "roi.update",
+      x: box.x,
+      y: box.y,
+      width: box.w,
+      height: box.h,
+    });
+  };
+
+  const handleConfigUpdate = (path: string, value: number | boolean) => {
+    updateConfig(path, value);
+
+    sendJson({
+      type: "config.update",
+      path,
+      value,
+    });
+  };
 
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden">
@@ -25,9 +45,9 @@ const Index = () => {
           <span className="text-[10px] font-mono text-muted-foreground ml-2">​</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${imageSrc ? 'bg-status-online animate-pulse-dot' : 'bg-status-offline'}`} />
+          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-status-online animate-pulse-dot' : 'bg-status-offline'}`} />
           <span className="text-[10px] font-mono text-muted-foreground">
-            {imageSrc ? 'CONNECTED' : 'OFFLINE'}
+            {connected ? 'CONNECTED' : 'OFFLINE'}
           </span>
         </div>
       </header>
@@ -36,8 +56,8 @@ const Index = () => {
         {/* Main Content - images take priority */}
         <main className="flex-1 overflow-hidden flex flex-col p-4 gap-3 bg-background">
           <div className="flex-1 grid grid-cols-2 gap-4 min-h-0">
-            <ImagePanel title="Live Feed" imgSrc={imageSrc} />
-            <ImagePanel title="Mask" imgSrc={imageSrc} showSelection={config.seg.enabled} />
+            <ImagePanel title="Live Feed" imgSrc={live} />
+            <ImagePanel title="Mask"imgSrc={mask} showSelection={config.seg.enabled}  onSelectionCommit={handleSelectionCommit}/>
           </div>
         </main>
 
@@ -63,21 +83,21 @@ const Index = () => {
               <ProcessingCard
                 title="Classic Processing"
                 enabled={config.classic.enabled}
-                onToggle={() => updateConfig("classic.enabled", !config.classic.enabled)}>
+                onToggle={() => handleConfigUpdate("classic.enabled", !config.classic.enabled)}>
                 
-                <InspectionSlider label="Low H" value={config.classic.lowH} onChange={(v) => updateConfig("classic.lowH", v)} />
-                <InspectionSlider label="Low S" value={config.classic.lowS} onChange={(v) => updateConfig("classic.lowS", v)} />
-                <InspectionSlider label="Low V" value={config.classic.lowV} onChange={(v) => updateConfig("classic.lowV", v)} />
-                <InspectionSlider label="High H" value={config.classic.highH} onChange={(v) => updateConfig("classic.highH", v)} />
-                <InspectionSlider label="High S" value={config.classic.highS} onChange={(v) => updateConfig("classic.highS", v)} />
-                <InspectionSlider label="High V" value={config.classic.highV} onChange={(v) => updateConfig("classic.highV", v)} />
-                <InspectionSlider label="Size" value={config.classic.size} onChange={(v) => updateConfig("classic.size", v)} max={200} />
+                <InspectionSlider label="Low H" value={config.classic.lowH} onChange={(v) => handleConfigUpdate("classic.lowH", v)} />
+                <InspectionSlider label="Low S" value={config.classic.lowS} onChange={(v) => handleConfigUpdate("classic.lowS", v)} />
+                <InspectionSlider label="Low V" value={config.classic.lowV} onChange={(v) => handleConfigUpdate("classic.lowV", v)} />
+                <InspectionSlider label="High H" value={config.classic.highH} onChange={(v) => handleConfigUpdate("classic.highH", v)} />
+                <InspectionSlider label="High S" value={config.classic.highS} onChange={(v) => handleConfigUpdate("classic.highS", v)} />
+                <InspectionSlider label="High V" value={config.classic.highV} onChange={(v) => handleConfigUpdate("classic.highV", v)} />
+                <InspectionSlider label="Size" value={config.classic.size} onChange={(v) => handleConfigUpdate("classic.size", v)} max={200} />
               </ProcessingCard>
 
               <ProcessingCard
                 title="YOLO Detector"
                 enabled={config.yolo.enabled}
-                onToggle={() => updateConfig("yolo.enabled", !config.yolo.enabled)}>
+                onToggle={() => handleConfigUpdate("yolo.enabled", !config.yolo.enabled)}>
                 
                 <p className="text-[10px] font-mono text-muted-foreground">Running object detection…</p>
               </ProcessingCard>
@@ -85,7 +105,7 @@ const Index = () => {
               <ProcessingCard
                 title="Segmentation"
                 enabled={config.seg.enabled}
-                onToggle={() => updateConfig("seg.enabled", !config.seg.enabled)}>
+                onToggle={() => handleConfigUpdate("seg.enabled", !config.seg.enabled)}>
                 
                 <p className="text-[10px] font-mono text-muted-foreground">Segmentation active…</p>
               </ProcessingCard>

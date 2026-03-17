@@ -5,9 +5,10 @@ interface ImagePanelProps {
   title: string;
   imgSrc: string | null;
   showSelection?: boolean;
+  onSelectionCommit?: (box: { x: number; y: number; w: number; h: number }) => void;
 }
 
-const ImagePanel = ({ title, imgSrc, showSelection }: ImagePanelProps) => {
+const ImagePanel = ({ title, imgSrc, showSelection, onSelectionCommit  }: ImagePanelProps) => {
   const imageAreaRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -35,7 +36,7 @@ const ImagePanel = ({ title, imgSrc, showSelection }: ImagePanelProps) => {
                 <span className="text-[10px] font-mono text-muted-foreground">NO SIGNAL</span>
               </div>
             )}
-            {showSelection && <SelectionBox containerRef={imageAreaRef} />}
+            {showSelection && <SelectionBox containerRef={imageAreaRef} onBoxCommit={onSelectionCommit} />}
           </div>
         </div>
       </div>

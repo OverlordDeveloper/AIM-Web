@@ -52,6 +52,6 @@ export function useInspectionConfig() {
     },
     [updateBackend]
   );
-
+  
   return { config, updateConfig };
 }
