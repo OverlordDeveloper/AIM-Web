@@ -6,11 +6,9 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
 const RESOLUTION_PRESETS = [
-  { label: "640 × 480", w: 640, h: 480 },
-  { label: "800 × 600", w: 800, h: 600 },
-  { label: "1280 × 720", w: 1280, h: 720 },
-  { label: "1280 × 960", w: 1280, h: 960 },
-  { label: "1920 × 1080", w: 1920, h: 1080 },
+  { label: "640 × 480", w: 256, h: 256 },
+  { label: "800 × 600", w: 512, h: 512 },
+  { label: "1280 × 720", w: 1024, h: 1024 },
   { label: "Custom", w: 0, h: 0 },
 ];
 
