@@ -1,7 +1,18 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Settings2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import InspectionSlider from "@/components/InspectionSlider";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
+
+const RESOLUTION_PRESETS = [
+  { label: "640 × 480", w: 640, h: 480 },
+  { label: "800 × 600", w: 800, h: 600 },
+  { label: "1280 × 720", w: 1280, h: 720 },
+  { label: "1280 × 960", w: 1280, h: 960 },
+  { label: "1920 × 1080", w: 1920, h: 1080 },
+  { label: "Custom", w: 0, h: 0 },
+];
 
 interface CameraSettings {
   exposureTime: number;
@@ -9,6 +20,8 @@ interface CameraSettings {
   brightness: number;
   contrast: number;
   saturation: number;
+  width: number;
+  height: number;
 }
 
 const CameraSettingsDialog = () => {
@@ -18,11 +31,29 @@ const CameraSettingsDialog = () => {
     brightness: 128,
     contrast: 128,
     saturation: 128,
+    width: 1280,
+    height: 720,
   });
+  const [customRes, setCustomRes] = useState(false);
 
   const update = (key: keyof CameraSettings, value: number) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
+
+  const handlePreset = (val: string) => {
+    const preset = RESOLUTION_PRESETS.find((p) => p.label === val);
+    if (!preset) return;
+    if (preset.w === 0) {
+      setCustomRes(true);
+    } else {
+      setCustomRes(false);
+      setSettings((prev) => ({ ...prev, width: preset.w, height: preset.h }));
+    }
+  };
+
+  const currentPreset = customRes
+    ? "Custom"
+    : RESOLUTION_PRESETS.find((p) => p.w === settings.width && p.h === settings.height)?.label ?? "Custom";
 
   return (
     <Dialog>
@@ -38,12 +69,56 @@ const CameraSettingsDialog = () => {
             Camera Settings
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-3 pt-2">
-          <InspectionSlider label="Exposure Time" value={settings.exposureTime} onChange={(v) => update("exposureTime", v)} max={500} />
-          <InspectionSlider label="Gain" value={settings.gain} onChange={(v) => update("gain", v)} max={100} />
-          <InspectionSlider label="Brightness" value={settings.brightness} onChange={(v) => update("brightness", v)} />
-          <InspectionSlider label="Contrast" value={settings.contrast} onChange={(v) => update("contrast", v)} />
-          <InspectionSlider label="Saturation" value={settings.saturation} onChange={(v) => update("saturation", v)} />
+        <div className="space-y-4 pt-2">
+          {/* Resolution section */}
+          <div className="space-y-2">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Resolution</span>
+            <Select value={currentPreset} onValueChange={handlePreset}>
+              <SelectTrigger className="h-8 text-xs font-mono bg-secondary border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {RESOLUTION_PRESETS.map((p) => (
+                  <SelectItem key={p.label} value={p.label} className="text-xs font-mono">
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {customRes && (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 space-y-1">
+                  <span className="text-[9px] font-mono uppercase text-muted-foreground">Width</span>
+                  <Input
+                    type="number"
+                    value={settings.width}
+                    onChange={(e) => update("width", Number(e.target.value))}
+                    className="h-7 text-xs font-mono bg-secondary border-border"
+                  />
+                </div>
+                <span className="text-muted-foreground text-xs mt-4">×</span>
+                <div className="flex-1 space-y-1">
+                  <span className="text-[9px] font-mono uppercase text-muted-foreground">Height</span>
+                  <Input
+                    type="number"
+                    value={settings.height}
+                    onChange={(e) => update("height", Number(e.target.value))}
+                    className="h-7 text-xs font-mono bg-secondary border-border"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sliders */}
+          <div className="space-y-3">
+            <InspectionSlider label="Exposure Time" value={settings.exposureTime} onChange={(v) => update("exposureTime", v)} max={500} />
+            <InspectionSlider label="Gain" value={settings.gain} onChange={(v) => update("gain", v)} max={100} />
+            <InspectionSlider label="Brightness" value={settings.brightness} onChange={(v) => update("brightness", v)} />
+            <InspectionSlider label="Contrast" value={settings.contrast} onChange={(v) => update("contrast", v)} />
+            <InspectionSlider label="Saturation" value={settings.saturation} onChange={(v) => update("saturation", v)} />
+          </div>
         </div>
       </DialogContent>
     </Dialog>
