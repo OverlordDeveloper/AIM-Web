@@ -1,7 +1,7 @@
 import ProcessingCard from "@/components/ProcessingCard";
 import InspectionSlider from "@/components/InspectionSlider";
 import ImagePanel from "@/components/ImagePanel";
-import CameraSettingsDialog from "@/components/CameraSettingsDialog";
+import CameraSettingsPanel from "@/components/CameraSettingsDialog";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useInspectionConfig } from "@/hooks/useInspectionConfig";
 import { Activity, Settings, ChevronRight } from "lucide-react";
