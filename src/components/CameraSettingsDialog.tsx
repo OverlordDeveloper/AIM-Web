@@ -111,7 +111,25 @@ const CameraSettingsDialog = () => {
 
           {/* Sliders */}
           <div className="space-y-3">
-            <InspectionSlider label="Exposure Time" value={settings.exposureTime} onChange={(v) => update("exposureTime", v)} max={500} />
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Exposure Time</span>
+                <span className="text-[10px] font-mono text-muted-foreground">ms</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min={1}
+                  max={1000}
+                  value={settings.exposureTime}
+                  onChange={(e) => update("exposureTime", Math.min(1000, Math.max(1, Number(e.target.value))))}
+                  className="h-7 w-20 text-xs font-mono bg-secondary border-border tabular-nums"
+                />
+                <div className="flex-1">
+                  <InspectionSlider label="" value={settings.exposureTime} onChange={(v) => update("exposureTime", v)} max={1000} min={1} />
+                </div>
+              </div>
+            </div>
             <InspectionSlider label="Gain" value={settings.gain} onChange={(v) => update("gain", v)} max={100} />
             <InspectionSlider label="Brightness" value={settings.brightness} onChange={(v) => update("brightness", v)} />
             <InspectionSlider label="Contrast" value={settings.contrast} onChange={(v) => update("contrast", v)} />
