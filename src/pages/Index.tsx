@@ -27,13 +27,18 @@ const Index = () => {
   };
 
   const handleConfigUpdate = (path: string, value: number | boolean) => {
-    updateConfig(path, value);
+    // If enabling a processing mode, disable the others
+    if (path.endsWith(".enabled") && value === true) {
+      const groups = ["classic", "yolo", "seg"];
+      const activeGroup = path.split(".")[0];
+      groups.filter(g => g !== activeGroup).forEach(g => {
+        updateConfig(`${g}.enabled`, false);
+        sendJson({ type: "config.update", path: `${g}.enabled`, value: false });
+      });
+    }
 
-    sendJson({
-      type: "config.update",
-      path,
-      value,
-    });
+    updateConfig(path, value);
+    sendJson({ type: "config.update", path, value });
   };
 
   return (
