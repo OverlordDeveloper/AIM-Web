@@ -2,9 +2,10 @@ import ProcessingCard from "@/components/ProcessingCard";
 import InspectionSlider from "@/components/InspectionSlider";
 import ImagePanel from "@/components/ImagePanel";
 import CameraSettingsPanel from "@/components/CameraSettingsDialog";
+import TopNav from "@/components/TopNav";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useInspectionConfig } from "@/hooks/useInspectionConfig";
-import { Activity, Settings, ChevronRight } from "lucide-react";
+import { Settings, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 const WS_URL = "ws://127.0.0.1:18080/api/ws/live";
