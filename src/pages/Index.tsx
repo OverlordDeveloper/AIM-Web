@@ -8,7 +8,8 @@ import { useInspectionConfig } from "@/hooks/useInspectionConfig";
 import { Settings, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
-const WS_URL = "ws://127.0.0.1:18080/api/ws/live";
+const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+const WS_URL = `${protocol}://${window.location.hostname}:18080/api/ws/live`;
 
 const Index = () => {
   const { live, mask, connected, sendJson } = useWebSocket(WS_URL);
