@@ -2,9 +2,10 @@ import ProcessingCard from "@/components/ProcessingCard";
 import InspectionSlider from "@/components/InspectionSlider";
 import ImagePanel from "@/components/ImagePanel";
 import CameraSettingsPanel from "@/components/CameraSettingsDialog";
+import TopNav from "@/components/TopNav";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useInspectionConfig } from "@/hooks/useInspectionConfig";
-import { Activity, Settings, ChevronRight } from "lucide-react";
+import { Settings, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 const WS_URL = "ws://127.0.0.1:18080/api/ws/live";
@@ -36,21 +37,7 @@ const Index = () => {
 
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden">
-      {/* Top Bar */}
-      <header className="h-11 shrink-0 flex items-center justify-between px-5 border-b border-border bg-card">
-        <div className="flex items-center gap-2.5">
-          <Activity className="w-4 h-4 text-primary" />
-          <span className="text-xs font-semibold uppercase tracking-[0.15em] text-foreground">
-            Vision Inspector
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-status-online animate-pulse-dot' : 'bg-status-offline'}`} />
-          <span className="text-[10px] font-mono text-muted-foreground">
-            {connected ? 'CONNECTED' : 'OFFLINE'}
-          </span>
-        </div>
-      </header>
+      <TopNav connected={connected} />
 
       <div className="flex-1 flex overflow-hidden">
         {/* Main Content */}
