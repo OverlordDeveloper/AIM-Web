@@ -37,21 +37,7 @@ const Index = () => {
 
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden">
-      {/* Top Bar */}
-      <header className="h-11 shrink-0 flex items-center justify-between px-5 border-b border-border bg-card">
-        <div className="flex items-center gap-2.5">
-          <Activity className="w-4 h-4 text-primary" />
-          <span className="text-xs font-semibold uppercase tracking-[0.15em] text-foreground">
-            Vision Inspector
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-status-online animate-pulse-dot' : 'bg-status-offline'}`} />
-          <span className="text-[10px] font-mono text-muted-foreground">
-            {connected ? 'CONNECTED' : 'OFFLINE'}
-          </span>
-        </div>
-      </header>
+      <TopNav connected={connected} />
 
       <div className="flex-1 flex overflow-hidden">
         {/* Main Content */}
