@@ -40,19 +40,8 @@ const Index = () => {
       <TopNav connected={connected} />
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Main Content */}
-        <main className="flex-1 overflow-hidden flex flex-col bg-background">
-          <div className="flex-1 grid grid-cols-2 gap-4 p-4 min-h-0">
-            <ImagePanel title="Live Feed" imgSrc={live} />
-            <ImagePanel title="Mask" imgSrc={mask} showSelection={config.seg.enabled} onSelectionCommit={handleSelectionCommit} />
-          </div>
-
-          {/* Bottom camera settings bar */}
-          <CameraSettingsPanel />
-        </main>
-
-        {/* Right Sidebar - Controls */}
-        <aside className={`shrink-0 border-l border-sidebar-border bg-sidebar flex flex-col transition-all duration-300 overflow-hidden ${controlsOpen ? 'w-64' : 'w-10'}`}>
+        {/* Left Sidebar - Controls */}
+        <aside className={`shrink-0 border-r border-sidebar-border bg-sidebar flex flex-col transition-all duration-300 overflow-hidden ${controlsOpen ? 'w-64' : 'w-10'}`}>
           <div
             className="px-2.5 py-3 border-b border-sidebar-border flex items-center gap-2 cursor-pointer select-none hover:bg-sidebar-accent/50 transition-colors"
             onClick={() => setControlsOpen(!controlsOpen)}
@@ -102,6 +91,17 @@ const Index = () => {
             </div>
           )}
         </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-hidden flex flex-col bg-background">
+          <div className="flex-1 grid grid-cols-2 gap-4 p-4 min-h-0">
+            <ImagePanel title="Live Feed" imgSrc={live} />
+            <ImagePanel title="Mask" imgSrc={mask} showSelection={config.seg.enabled} onSelectionCommit={handleSelectionCommit} />
+          </div>
+
+          {/* Bottom camera settings bar */}
+          <CameraSettingsPanel />
+        </main>
       </div>
     </div>);
 
