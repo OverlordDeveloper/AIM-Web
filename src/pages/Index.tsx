@@ -8,6 +8,7 @@ import { useInspectionConfig } from "@/hooks/useInspectionConfig";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Settings, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const protocol = window.location.protocol === "https:" ? "wss" : "ws";
 const WS_URL = `${protocol}://${window.location.hostname}:18080/api/ws/live`;
