@@ -7,17 +7,30 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { useInspectionConfig } from "@/hooks/useInspectionConfig";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Settings, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const protocol = window.location.protocol === "https:" ? "wss" : "ws";
 const WS_URL = `${protocol}://${window.location.hostname}:18080/api/ws/live`;
 
 const Index = () => {
-  const { live, mask, connected, sendJson } = useWebSocket(WS_URL);
-  const { config, updateConfig } = useInspectionConfig();
+  const { live, mask, connected, sendJson, lastMessage } = useWebSocket(WS_URL);
+  const { config, updateConfig, setConfig } = useInspectionConfig();
   const [controlsOpen, setControlsOpen] = useState(true);
   
+  useEffect(() => {
+  if (!lastMessage) return;
+
+  if (
+    lastMessage.type === "state.init" ||
+    lastMessage.type === "state.update"
+  ) {
+    if (lastMessage.config) {
+      setConfig(lastMessage.config);
+    }
+  }
+}, [lastMessage, setConfig]);
+
   const handleSelectionCommit = (box: { x: number; y: number; w: number; h: number }) => {
     sendJson({
       type: "roi.update",
@@ -78,7 +91,7 @@ const Index = () => {
                 <InspectionSlider label="High H" value={config.classic.highH} onChange={(v) => handleConfigUpdate("classic.highH", v)} />
                 <InspectionSlider label="High S" value={config.classic.highS} onChange={(v) => handleConfigUpdate("classic.highS", v)} />
                 <InspectionSlider label="High V" value={config.classic.highV} onChange={(v) => handleConfigUpdate("classic.highV", v)} />
-                <InspectionSlider label="Size" value={config.classic.size} onChange={(v) => handleConfigUpdate("classic.size", v)} max={200} />
+                <InspectionSlider label="Size" value={config.classic.size} onChange={(v) => handleConfigUpdate("classic.size", v)} min={50} max={30000} />
                 
                 <Collapsible className="border-t border-sidebar-border/50 pt-2 mt-1">
                   <CollapsibleTrigger className="flex items-center gap-1.5 w-full cursor-pointer select-none group">

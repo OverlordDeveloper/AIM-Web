@@ -20,41 +20,60 @@ export interface InspectionConfig {
   seg: { enabled: boolean };
 }
 
-const API_BASE = "http://localhost:8000/api";
+const defaultConfig: InspectionConfig = {
+  classic: {
+    enabled: false,
+    lowH: 0,
+    lowS: 0,
+    lowV: 0,
+    highH: 255,
+    highS: 255,
+    highV: 255,
+    size: 100,
+    contours: false,
+    tracking: false,
+    drawTracking: false,
+  },
+  yolo: {
+    enabled: false,
+  },
+  seg: {
+    enabled: false,
+  },
+};
 
 export function useInspectionConfig() {
-  const [config, setConfig] = useState<InspectionConfig>({
-    classic: { enabled: false, lowH: 0, lowS: 0, lowV: 0, highH: 255, highS: 255, highV: 255, size: 100, contours: false, tracking: false, drawTracking: false },
-    yolo: { enabled: false },
-    seg: { enabled: false },
-  });
+  const [config, setConfigState] = useState<InspectionConfig>(defaultConfig);
 
-  const updateBackend = useCallback(async (path: string, value: unknown) => {
+  const updateConfig = useCallback((path: string, value: unknown) => {
     const [group, key] = path.split(".");
-    const update = { [group]: { [key]: value } };
 
-    try {
-      await fetch(`${API_BASE}/config`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(update),
-      });
-    } catch (err) {
-      console.error("Failed to update backend:", err);
+    if (!group || !key) {
+      console.warn("Invalid config path:", path);
+      return;
     }
+
+    setConfigState((prev) => ({
+      ...prev,
+      [group]: {
+        ...(prev as any)[group],
+        [key]: value,
+      },
+    }));
   }, []);
 
-  const updateConfig = useCallback(
-    (path: string, value: unknown) => {
-      const [group, key] = path.split(".");
-      setConfig((prev) => ({
-        ...prev,
-        [group]: { ...(prev as any)[group], [key]: value },
-      }));
-      updateBackend(path, value);
-    },
-    [updateBackend]
-  );
-  
-  return { config, updateConfig };
+  const setConfig = useCallback((nextConfig: InspectionConfig) => {
+    setConfigState(nextConfig);
+  }, []);
+
+  const resetConfig = useCallback(() => {
+    setConfigState(defaultConfig);
+  }, []);
+
+  return {
+    config,
+    updateConfig,
+    setConfig,
+    resetConfig,
+  };
 }

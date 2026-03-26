@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+type ServerJsonMessage = {
+  type: string;
+  config?: any;
+  [key: string]: any;
+};
+
 type StreamState = {
   live: string | null;
   mask: string | null;
   connected: boolean;
+  lastMessage: ServerJsonMessage | null;
   sendJson: (payload: unknown) => boolean;
 };
 
@@ -21,6 +28,7 @@ export function useWebSocket(url: string): StreamState {
     live: null,
     mask: null,
     connected: false,
+    lastMessage: null,
   });
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -57,9 +65,18 @@ export function useWebSocket(url: string): StreamState {
 
     ws.onmessage = (e) => {
       try {
-        // If server sends text messages too, handle them here
         if (typeof e.data === "string") {
-          console.log("📩 Text message from server:", e.data);
+          try {
+            const msg = JSON.parse(e.data) as ServerJsonMessage;
+            console.log("📩 Text message from server:", msg);
+
+            setState((prev) => ({
+              ...prev,
+              lastMessage: msg,
+            }));
+          } catch (err) {
+            console.error("Failed to parse WS JSON:", err, e.data);
+          }
           return;
         }
 
@@ -104,11 +121,12 @@ export function useWebSocket(url: string): StreamState {
         liveUrlRef.current = liveUrl;
         maskUrlRef.current = maskUrl;
 
-        setState({
+        setState((prev) => ({
+          ...prev,
           live: liveUrl,
           mask: maskUrl,
           connected: true,
-        });
+        }));
       } catch (err) {
         console.error("Failed to decode WS packet:", err);
       }
