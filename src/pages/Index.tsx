@@ -5,6 +5,7 @@ import CameraSettingsPanel from "@/components/CameraSettingsDialog";
 import TopNav from "@/components/TopNav";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useInspectionConfig } from "@/hooks/useInspectionConfig";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Settings, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
