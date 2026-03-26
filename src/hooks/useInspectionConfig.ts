@@ -9,6 +9,9 @@ export interface ClassicConfig {
   highS: number;
   highV: number;
   size: number;
+  contours: boolean;
+  tracking: boolean;
+  drawTracking: boolean;
 }
 
 export interface InspectionConfig {
@@ -21,7 +24,7 @@ const API_BASE = "http://localhost:8000/api";
 
 export function useInspectionConfig() {
   const [config, setConfig] = useState<InspectionConfig>({
-    classic: { enabled: false, lowH: 0, lowS: 0, lowV: 0, highH: 255, highS: 255, highV: 255, size: 100 },
+    classic: { enabled: false, lowH: 0, lowS: 0, lowV: 0, highH: 255, highS: 255, highV: 255, size: 100, contours: false, tracking: false, drawTracking: false },
     yolo: { enabled: false },
     seg: { enabled: false },
   });

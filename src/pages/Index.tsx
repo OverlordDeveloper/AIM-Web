@@ -5,6 +5,7 @@ import CameraSettingsPanel from "@/components/CameraSettingsDialog";
 import TopNav from "@/components/TopNav";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useInspectionConfig } from "@/hooks/useInspectionConfig";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Settings, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
@@ -77,6 +78,24 @@ const Index = () => {
                 <InspectionSlider label="High S" value={config.classic.highS} onChange={(v) => handleConfigUpdate("classic.highS", v)} />
                 <InspectionSlider label="High V" value={config.classic.highV} onChange={(v) => handleConfigUpdate("classic.highV", v)} />
                 <InspectionSlider label="Size" value={config.classic.size} onChange={(v) => handleConfigUpdate("classic.size", v)} max={200} />
+                
+                <div className="border-t border-sidebar-border/50 pt-2 mt-1 space-y-1.5">
+                  <span className="text-[9px] font-mono uppercase tracking-widest text-sidebar-foreground/50">Options</span>
+                  {[
+                    { key: "contours", label: "Contours" },
+                    { key: "tracking", label: "Tracking" },
+                    { key: "drawTracking", label: "Draw Tracking" },
+                  ].map(({ key, label }) => (
+                    <label key={key} className="flex items-center gap-2 cursor-pointer group">
+                      <Checkbox
+                        checked={(config.classic as any)[key]}
+                        onCheckedChange={(v) => handleConfigUpdate(`classic.${key}`, !!v)}
+                        className="h-3.5 w-3.5 border-sidebar-foreground/30 data-[state=checked]:bg-sidebar-primary data-[state=checked]:border-sidebar-primary"
+                      />
+                      <span className="text-[10px] font-mono text-sidebar-foreground/70 group-hover:text-sidebar-foreground transition-colors">{label}</span>
+                    </label>
+                  ))}
+                </div>
               </ProcessingCard>
 
               <ProcessingCard
