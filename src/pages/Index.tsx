@@ -80,23 +80,28 @@ const Index = () => {
                 <InspectionSlider label="High V" value={config.classic.highV} onChange={(v) => handleConfigUpdate("classic.highV", v)} />
                 <InspectionSlider label="Size" value={config.classic.size} onChange={(v) => handleConfigUpdate("classic.size", v)} max={200} />
                 
-                <div className="border-t border-sidebar-border/50 pt-2 mt-1 space-y-1.5">
-                  <span className="text-[9px] font-mono uppercase tracking-widest text-sidebar-foreground/50">Options</span>
-                  {[
-                    { key: "contours", label: "Contours" },
-                    { key: "tracking", label: "Tracking" },
-                    { key: "drawTracking", label: "Draw Tracking" },
-                  ].map(({ key, label }) => (
-                    <label key={key} className="flex items-center gap-2 cursor-pointer group">
-                      <Checkbox
-                        checked={(config.classic as any)[key]}
-                        onCheckedChange={(v) => handleConfigUpdate(`classic.${key}`, !!v)}
-                        className="h-3.5 w-3.5 border-sidebar-foreground/30 data-[state=checked]:bg-sidebar-primary data-[state=checked]:border-sidebar-primary"
-                      />
-                      <span className="text-[10px] font-mono text-sidebar-foreground/70 group-hover:text-sidebar-foreground transition-colors">{label}</span>
-                    </label>
-                  ))}
-                </div>
+                <Collapsible className="border-t border-sidebar-border/50 pt-2 mt-1">
+                  <CollapsibleTrigger className="flex items-center gap-1.5 w-full cursor-pointer select-none group">
+                    <ChevronRight className="w-3 h-3 text-sidebar-foreground/40 transition-transform group-data-[state=open]:rotate-90" />
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80 transition-colors">Settings</span>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-1.5 pt-2">
+                    {[
+                      { key: "contours", label: "Contours" },
+                      { key: "tracking", label: "Tracking" },
+                      { key: "drawTracking", label: "Draw Tracking" },
+                    ].map(({ key, label }) => (
+                      <label key={key} className="flex items-center gap-2 cursor-pointer group">
+                        <Checkbox
+                          checked={(config.classic as any)[key]}
+                          onCheckedChange={(v) => handleConfigUpdate(`classic.${key}`, !!v)}
+                          className="h-3.5 w-3.5 border-sidebar-foreground/30 data-[state=checked]:bg-sidebar-primary data-[state=checked]:border-sidebar-primary"
+                        />
+                        <span className="text-[10px] font-mono text-sidebar-foreground/70 group-hover:text-sidebar-foreground transition-colors">{label}</span>
+                      </label>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
               </ProcessingCard>
 
               <ProcessingCard
