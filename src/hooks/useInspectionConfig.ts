@@ -9,6 +9,9 @@ export interface ClassicConfig {
   highS: number;
   highV: number;
   size: number;
+  contours: boolean;
+  tracking: boolean;
+  drawTracking: boolean;
 }
 
 export interface InspectionConfig {
