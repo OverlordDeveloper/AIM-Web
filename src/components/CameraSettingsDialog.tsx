@@ -104,22 +104,46 @@ const CameraSettingsPanel = ({ settings, onUpdate }: CameraSettingsPanelProps) =
             )}
           </div>
 
+          <div className="min-w-[100px] flex flex-col justify-center gap-1.5">
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <Checkbox
+                checked={settings.aeEnable}
+                onCheckedChange={(v) => onUpdate("aeEnable", !!v)}
+                className="h-3.5 w-3.5 border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              />
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
+                Auto Exposure
+              </span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <Checkbox
+                checked={settings.awbEnable}
+                onCheckedChange={(v) => onUpdate("awbEnable", !!v)}
+                className="h-3.5 w-3.5 border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              />
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
+                Auto WB
+              </span>
+            </label>
+          </div>
+
           <div className="min-w-[150px]">
             <InspectionSlider
-              label="Exposure (ms)"
+              label="Exposure (µs)"
               value={settings.exposureTime}
               onChange={(v) => onUpdate("exposureTime", v)}
-              max={1000}
+              max={100000}
               min={1}
             />
           </div>
 
           <div className="min-w-[150px]">
             <InspectionSlider
-              label="Gain"
-              value={settings.gain}
-              onChange={(v) => onUpdate("gain", v)}
-              max={100}
+              label="Analogue Gain"
+              value={settings.analogueGain}
+              onChange={(v) => onUpdate("analogueGain", v)}
+              max={16}
+              min={0}
             />
           </div>
 
@@ -128,6 +152,8 @@ const CameraSettingsPanel = ({ settings, onUpdate }: CameraSettingsPanelProps) =
               label="Brightness"
               value={settings.brightness}
               onChange={(v) => onUpdate("brightness", v)}
+              max={1}
+              min={-1}
             />
           </div>
 
@@ -136,14 +162,8 @@ const CameraSettingsPanel = ({ settings, onUpdate }: CameraSettingsPanelProps) =
               label="Contrast"
               value={settings.contrast}
               onChange={(v) => onUpdate("contrast", v)}
-            />
-          </div>
-
-          <div className="min-w-[150px]">
-            <InspectionSlider
-              label="Saturation"
-              value={settings.saturation}
-              onChange={(v) => onUpdate("saturation", v)}
+              max={10}
+              min={0}
             />
           </div>
         </div>
