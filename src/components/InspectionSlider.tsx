@@ -21,7 +21,7 @@ const InspectionSlider = ({ label, value, onChange, max = 255, min = 0, step = 1
         onValueChange={([v]) => onChange(v)}
         max={max}
         min={min}
-        step={1}
+        step={step}
         className="cursor-pointer"
       />
     </div>
