@@ -91,7 +91,7 @@ const Index = () => {
 
     sendJson({
       type: "camera.update",
-      path,
+      path: `camera.${path}`,
       value,
     });
   };
