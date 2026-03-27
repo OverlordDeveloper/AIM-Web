@@ -2,6 +2,7 @@ import { Settings2, ChevronUp, ChevronDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import InspectionSlider from "@/components/InspectionSlider";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useMemo, useState } from "react";
 
 const RESOLUTION_PRESETS = [
