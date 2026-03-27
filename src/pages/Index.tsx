@@ -85,7 +85,7 @@ const Index = () => {
     sendJson({ type: "config.update", path, value });
   };
 
-  const handleCameraUpdate = (path: keyof CameraSettings, value: number) => {
+  const handleCameraUpdate = (path: keyof CameraSettings, value: number | boolean) => {
     setCameraSettings((prev) => ({
       ...prev,
       [path]: value,
