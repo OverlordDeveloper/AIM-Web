@@ -13,23 +13,48 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 const protocol = window.location.protocol === "https:" ? "wss" : "ws";
 const WS_URL = `${protocol}://${window.location.hostname}:18080/api/ws/live`;
 
+export interface CameraSettings {
+  exposureTime: number;
+  gain: number;
+  brightness: number;
+  contrast: number;
+  saturation: number;
+  width: number;
+  height: number;
+}
+
+const DEFAULT_CAMERA_SETTINGS: CameraSettings = {
+  exposureTime: 100,
+  gain: 50,
+  brightness: 128,
+  contrast: 128,
+  saturation: 128,
+  width: 1280,
+  height: 720,
+};
+
 const Index = () => {
   const { live, mask, connected, sendJson, lastMessage } = useWebSocket(WS_URL);
   const { config, updateConfig, setConfig } = useInspectionConfig();
   const [controlsOpen, setControlsOpen] = useState(true);
-  
-  useEffect(() => {
-  if (!lastMessage) return;
+  const [cameraSettings, setCameraSettings] = useState<CameraSettings>(DEFAULT_CAMERA_SETTINGS);
 
-  if (
-    lastMessage.type === "state.init" ||
-    lastMessage.type === "state.update"
-  ) {
-    if (lastMessage.config) {
-      setConfig(lastMessage.config);
+  useEffect(() => {
+    if (!lastMessage) return;
+
+    if (lastMessage.type === "state.init" || lastMessage.type === "state.update") {
+      if (lastMessage.config) {
+        setConfig(lastMessage.config);
+      }
+
+      if (lastMessage.camera) {
+        setCameraSettings((prev) => ({
+          ...prev,
+          ...lastMessage.camera,
+        }));
+      }
     }
-  }
-}, [lastMessage, setConfig]);
+  }, [lastMessage, setConfig]);
 
   const handleSelectionCommit = (box: { x: number; y: number; w: number; h: number }) => {
     sendJson({
@@ -42,18 +67,33 @@ const Index = () => {
   };
 
   const handleConfigUpdate = (path: string, value: number | boolean) => {
-    // If enabling a processing mode, disable the others
     if (path.endsWith(".enabled") && value === true) {
       const groups = ["classic", "yolo", "seg"];
       const activeGroup = path.split(".")[0];
-      groups.filter(g => g !== activeGroup).forEach(g => {
-        updateConfig(`${g}.enabled`, false);
-        sendJson({ type: "config.update", path: `${g}.enabled`, value: false });
-      });
+
+      groups
+        .filter((g) => g !== activeGroup)
+        .forEach((g) => {
+          updateConfig(`${g}.enabled`, false);
+          sendJson({ type: "config.update", path: `${g}.enabled`, value: false });
+        });
     }
 
     updateConfig(path, value);
     sendJson({ type: "config.update", path, value });
+  };
+
+  const handleCameraUpdate = (path: keyof CameraSettings, value: number) => {
+    setCameraSettings((prev) => ({
+      ...prev,
+      [path]: value,
+    }));
+
+    sendJson({
+      type: "camera.update",
+      path,
+      value,
+    });
   };
 
   return (
@@ -61,8 +101,11 @@ const Index = () => {
       <TopNav connected={connected} />
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar - Controls */}
-        <aside className={`shrink-0 border-r border-sidebar-border bg-sidebar flex flex-col transition-all duration-300 overflow-hidden ${controlsOpen ? 'w-64' : 'w-10'}`}>
+        <aside
+          className={`shrink-0 border-r border-sidebar-border bg-sidebar flex flex-col transition-all duration-300 overflow-hidden ${
+            controlsOpen ? "w-64" : "w-10"
+          }`}
+        >
           <div
             className="px-2.5 py-3 border-b border-sidebar-border flex items-center gap-2 cursor-pointer select-none hover:bg-sidebar-accent/50 transition-colors"
             onClick={() => setControlsOpen(!controlsOpen)}
@@ -83,8 +126,8 @@ const Index = () => {
               <ProcessingCard
                 title="Classic Processing"
                 enabled={config.classic.enabled}
-                onToggle={() => handleConfigUpdate("classic.enabled", !config.classic.enabled)}>
-                
+                onToggle={() => handleConfigUpdate("classic.enabled", !config.classic.enabled)}
+              >
                 <InspectionSlider label="Low H" value={config.classic.lowH} onChange={(v) => handleConfigUpdate("classic.lowH", v)} />
                 <InspectionSlider label="Low S" value={config.classic.lowS} onChange={(v) => handleConfigUpdate("classic.lowS", v)} />
                 <InspectionSlider label="Low V" value={config.classic.lowV} onChange={(v) => handleConfigUpdate("classic.lowV", v)} />
@@ -92,11 +135,13 @@ const Index = () => {
                 <InspectionSlider label="High S" value={config.classic.highS} onChange={(v) => handleConfigUpdate("classic.highS", v)} />
                 <InspectionSlider label="High V" value={config.classic.highV} onChange={(v) => handleConfigUpdate("classic.highV", v)} />
                 <InspectionSlider label="Size" value={config.classic.size} onChange={(v) => handleConfigUpdate("classic.size", v)} min={50} max={30000} />
-                
+
                 <Collapsible className="border-t border-sidebar-border/50 pt-2 mt-1">
                   <CollapsibleTrigger className="flex items-center gap-1.5 w-full cursor-pointer select-none group">
                     <ChevronRight className="w-3 h-3 text-sidebar-foreground/40 transition-transform group-data-[state=open]:rotate-90" />
-                    <span className="text-[9px] font-mono uppercase tracking-widest text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80 transition-colors">Settings</span>
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80 transition-colors">
+                      Settings
+                    </span>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="space-y-1.5 pt-2">
                     {[
@@ -110,7 +155,9 @@ const Index = () => {
                           onCheckedChange={(v) => handleConfigUpdate(`classic.${key}`, !!v)}
                           className="h-3.5 w-3.5 border-sidebar-foreground/30 data-[state=checked]:bg-sidebar-primary data-[state=checked]:border-sidebar-primary"
                         />
-                        <span className="text-[10px] font-mono text-sidebar-foreground/70 group-hover:text-sidebar-foreground transition-colors">{label}</span>
+                        <span className="text-[10px] font-mono text-sidebar-foreground/70 group-hover:text-sidebar-foreground transition-colors">
+                          {label}
+                        </span>
                       </label>
                     ))}
                   </CollapsibleContent>
@@ -120,35 +167,41 @@ const Index = () => {
               <ProcessingCard
                 title="YOLO Detector"
                 enabled={config.yolo.enabled}
-                onToggle={() => handleConfigUpdate("yolo.enabled", !config.yolo.enabled)}>
-                
+                onToggle={() => handleConfigUpdate("yolo.enabled", !config.yolo.enabled)}
+              >
                 <p className="text-[10px] font-mono text-muted-foreground">Running object detection…</p>
               </ProcessingCard>
 
               <ProcessingCard
                 title="Segmentation"
                 enabled={config.seg.enabled}
-                onToggle={() => handleConfigUpdate("seg.enabled", !config.seg.enabled)}>
-                
+                onToggle={() => handleConfigUpdate("seg.enabled", !config.seg.enabled)}
+              >
                 <p className="text-[10px] font-mono text-muted-foreground">Segmentation active…</p>
               </ProcessingCard>
             </div>
           )}
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 overflow-hidden flex flex-col bg-background">
           <div className="flex-1 grid grid-cols-2 gap-4 p-4 min-h-0">
             <ImagePanel title="Live Feed" imgSrc={live} />
-            <ImagePanel title="Mask" imgSrc={mask} showSelection={config.seg.enabled} onSelectionCommit={handleSelectionCommit} />
+            <ImagePanel
+              title="Mask"
+              imgSrc={mask}
+              showSelection={config.seg.enabled}
+              onSelectionCommit={handleSelectionCommit}
+            />
           </div>
 
-          {/* Bottom camera settings bar */}
-          <CameraSettingsPanel />
+          <CameraSettingsPanel
+            settings={cameraSettings}
+            onUpdate={handleCameraUpdate}
+          />
         </main>
       </div>
-    </div>);
-
+    </div>
+  );
 };
 
 export default Index;
