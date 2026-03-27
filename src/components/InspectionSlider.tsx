@@ -6,6 +6,7 @@ interface InspectionSliderProps {
   onChange: (value: number) => void;
   max?: number;
   min?: number;
+  step?: number;
 }
 
 const InspectionSlider = ({ label, value, onChange, max = 255, min = 0 }: InspectionSliderProps) => {
