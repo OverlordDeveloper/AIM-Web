@@ -144,6 +144,7 @@ const CameraSettingsPanel = ({ settings, onUpdate }: CameraSettingsPanelProps) =
               onChange={(v) => onUpdate("analogueGain", v)}
               max={16}
               min={0}
+              step={0.1}
             />
           </div>
 
@@ -154,6 +155,7 @@ const CameraSettingsPanel = ({ settings, onUpdate }: CameraSettingsPanelProps) =
               onChange={(v) => onUpdate("brightness", v)}
               max={1}
               min={-1}
+              step={0.01}
             />
           </div>
 
@@ -164,6 +166,7 @@ const CameraSettingsPanel = ({ settings, onUpdate }: CameraSettingsPanelProps) =
               onChange={(v) => onUpdate("contrast", v)}
               max={10}
               min={0}
+              step={0.1}
             />
           </div>
         </div>
