@@ -25,7 +25,7 @@ export interface CameraSettings {
 
 interface CameraSettingsPanelProps {
   settings: CameraSettings;
-  onUpdate: (key: keyof CameraSettings, value: number) => void;
+  onUpdate: (key: keyof CameraSettings, value: number | boolean) => void;
 }
 
 const CameraSettingsPanel = ({ settings, onUpdate }: CameraSettingsPanelProps) => {
