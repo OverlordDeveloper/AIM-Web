@@ -6,9 +6,10 @@ interface InspectionSliderProps {
   onChange: (value: number) => void;
   max?: number;
   min?: number;
+  step?: number;
 }
 
-const InspectionSlider = ({ label, value, onChange, max = 255, min = 0 }: InspectionSliderProps) => {
+const InspectionSlider = ({ label, value, onChange, max = 255, min = 0, step = 1 }: InspectionSliderProps) => {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
@@ -20,7 +21,7 @@ const InspectionSlider = ({ label, value, onChange, max = 255, min = 0 }: Inspec
         onValueChange={([v]) => onChange(v)}
         max={max}
         min={min}
-        step={1}
+        step={step}
         className="cursor-pointer"
       />
     </div>

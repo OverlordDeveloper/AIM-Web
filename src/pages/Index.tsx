@@ -14,21 +14,23 @@ const protocol = window.location.protocol === "https:" ? "wss" : "ws";
 const WS_URL = `${protocol}://${window.location.hostname}:18080/api/ws/live`;
 
 export interface CameraSettings {
+  aeEnable: boolean;
   exposureTime: number;
-  gain: number;
+  analogueGain: number;
+  awbEnable: boolean;
   brightness: number;
   contrast: number;
-  saturation: number;
   width: number;
   height: number;
 }
 
 const DEFAULT_CAMERA_SETTINGS: CameraSettings = {
-  exposureTime: 100,
-  gain: 50,
-  brightness: 128,
-  contrast: 128,
-  saturation: 128,
+  aeEnable: true,
+  exposureTime: 1000,
+  analogueGain: 2.0,
+  awbEnable: false,
+  brightness: 0.1,
+  contrast: 1.2,
   width: 1280,
   height: 720,
 };
@@ -83,7 +85,7 @@ const Index = () => {
     sendJson({ type: "config.update", path, value });
   };
 
-  const handleCameraUpdate = (path: keyof CameraSettings, value: number) => {
+  const handleCameraUpdate = (path: keyof CameraSettings, value: number | boolean) => {
     setCameraSettings((prev) => ({
       ...prev,
       [path]: value,
