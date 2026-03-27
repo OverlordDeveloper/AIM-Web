@@ -12,11 +12,12 @@ const RESOLUTION_PRESETS = [
 ];
 
 export interface CameraSettings {
+  aeEnable: boolean;
   exposureTime: number;
-  gain: number;
+  analogueGain: number;
+  awbEnable: boolean;
   brightness: number;
   contrast: number;
-  saturation: number;
   width: number;
   height: number;
 }
