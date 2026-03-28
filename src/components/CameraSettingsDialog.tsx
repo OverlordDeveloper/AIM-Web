@@ -9,6 +9,8 @@ const RESOLUTION_PRESETS = [
   { label: "256 × 256", w: 256, h: 256 },
   { label: "512 × 512", w: 512, h: 512 },
   { label: "1024 × 1024", w: 1024, h: 1024 },
+  { label: "2048 × 2048", w: 2048, h: 2048 },
+  { label: "3040 × 3040", w: 3040, h: 3040 },
   { label: "Custom", w: 0, h: 0 },
 ];
 
