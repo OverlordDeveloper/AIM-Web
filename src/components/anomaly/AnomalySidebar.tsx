@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
 import { X, RotateCcw, Hammer, Play, Brain, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AnomalyItem } from "@/pages/AnomalyDetection";
