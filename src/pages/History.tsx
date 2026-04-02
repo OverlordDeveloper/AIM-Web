@@ -38,7 +38,7 @@ const generateMockResults = (): HistoryResult[] => {
   return results;
 };
 
-const RESULTS_PER_PAGE = 60;
+const RESULTS_PER_PAGE = 100;
 const TIME_OPTIONS = ["Last 30 minutes", "Last 1 hour", "Last 8 hours", "Last 24 hours"];
 
 const History = () => {
@@ -66,7 +66,6 @@ const History = () => {
   );
 
   const selectedResult = filteredResults.find((r) => r.id === selectedId);
-
   const activeFilterCount = [filterAnomaly, filterYolo].filter(Boolean).length;
 
   return (
@@ -74,21 +73,17 @@ const History = () => {
       <TopNav connected={connected} />
 
       {/* Top toolbar */}
-      <div className="shrink-0 px-4 py-2.5 border-b border-border bg-card flex items-center gap-3 flex-wrap">
-        <h2 className="text-xs font-semibold text-foreground tracking-wider uppercase mr-2">History</h2>
-
+      <div className="shrink-0 px-4 py-2 border-b border-border bg-card flex items-center gap-3">
+        <h2 className="text-xs font-semibold text-foreground tracking-wider uppercase mr-1">History</h2>
         <div className="h-4 w-px bg-border" />
 
-        {/* Filters */}
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5">
               <Filter className="w-3 h-3" />
               Filters
               {activeFilterCount > 0 && (
-                <Badge variant="secondary" className="ml-0.5 h-4 px-1 text-[9px]">
-                  {activeFilterCount}
-                </Badge>
+                <Badge variant="secondary" className="ml-0.5 h-4 px-1 text-[9px]">{activeFilterCount}</Badge>
               )}
             </Button>
           </PopoverTrigger>
@@ -106,7 +101,6 @@ const History = () => {
           </PopoverContent>
         </Popover>
 
-        {/* Time range */}
         <Select value={timeSelection} onValueChange={setTimeSelection}>
           <SelectTrigger className="h-7 w-[160px] text-[11px]">
             <SelectValue />
@@ -124,72 +118,61 @@ const History = () => {
 
         <div className="flex-1" />
 
-        {/* Pagination */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-muted-foreground font-mono mr-1">
-            {filteredResults.length} results
-          </span>
-          <Button variant="outline" size="icon" className="h-6 w-6" disabled={currentPage === 0}
-            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}>
-            <ChevronLeft className="w-3 h-3" />
-          </Button>
-          <span className="text-[10px] font-mono text-muted-foreground min-w-[40px] text-center">
-            {currentPage + 1}/{totalPages}
-          </span>
-          <Button variant="outline" size="icon" className="h-6 w-6" disabled={currentPage >= totalPages - 1}
-            onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}>
-            <ChevronRight className="w-3 h-3" />
-          </Button>
-        </div>
+        <span className="text-[10px] text-muted-foreground font-mono mr-1">{filteredResults.length} results</span>
+        <Button variant="outline" size="icon" className="h-6 w-6" disabled={currentPage === 0}
+          onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}>
+          <ChevronLeft className="w-3 h-3" />
+        </Button>
+        <span className="text-[10px] font-mono text-muted-foreground min-w-[40px] text-center">
+          {currentPage + 1}/{totalPages}
+        </span>
+        <Button variant="outline" size="icon" className="h-6 w-6" disabled={currentPage >= totalPages - 1}
+          onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}>
+          <ChevronRight className="w-3 h-3" />
+        </Button>
       </div>
 
-      {/* Main content area */}
+      {/* Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Grid area */}
-        <ScrollArea className={cn("flex-1 transition-all", selectedResult ? "w-[55%]" : "w-full")}>
-          <div className="p-3 grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
+        {/* Results list */}
+        <ScrollArea className={cn("transition-all border-r border-border", selectedResult ? "w-[35%] min-w-[300px]" : "w-full")}>
+          <div className="py-0.5">
+            {pageResults.length === 0 && (
+              <p className="text-[11px] text-muted-foreground text-center py-16">No results found</p>
+            )}
             {pageResults.map((res) => (
               <button
                 key={res.id}
                 onClick={() => { setSelectedId(res.id); setDisplayMode("image"); }}
                 className={cn(
-                  "text-left rounded-md border p-2.5 transition-all",
+                  "w-full text-left px-4 py-1.5 flex items-center gap-2 text-[11px] font-mono transition-colors",
                   selectedId === res.id
-                    ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
-                    : "border-border bg-card hover:border-primary/20 hover:bg-card/80"
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground/80 hover:bg-secondary/50"
                 )}
               >
-                {/* Thumbnail placeholder */}
-                <div className="w-full aspect-video rounded bg-secondary/50 mb-2 flex items-center justify-center">
-                  <ImageIcon className="w-5 h-5 text-muted-foreground/20" />
-                </div>
-                <p className="text-[10px] font-mono text-foreground/80 truncate">{res.time}</p>
-                <div className="flex items-center gap-1 mt-1">
+                <span className="truncate flex-1">{res.time}</span>
+                <div className="flex items-center gap-1 shrink-0">
                   {res.anomalyReject && (
-                    <Badge variant="secondary" className="h-3.5 px-1 text-[8px] font-semibold bg-[hsl(230,60%,70%)]/15 text-[hsl(230,60%,70%)] border-0">
+                    <Badge variant="secondary" className="h-4 px-1.5 text-[8px] font-semibold bg-[hsl(230,60%,70%)]/15 text-[hsl(230,60%,70%)] border-0">
                       anomaly
                     </Badge>
                   )}
                   {res.yoloReject && (
-                    <Badge variant="secondary" className="h-3.5 px-1 text-[8px] font-semibold bg-[hsl(35,90%,60%)]/15 text-[hsl(35,90%,60%)] border-0">
+                    <Badge variant="secondary" className="h-4 px-1.5 text-[8px] font-semibold bg-[hsl(35,90%,60%)]/15 text-[hsl(35,90%,60%)] border-0">
                       yolo
                     </Badge>
                   )}
                 </div>
               </button>
             ))}
-            {pageResults.length === 0 && (
-              <div className="col-span-full py-16 text-center">
-                <p className="text-[11px] text-muted-foreground">No results found</p>
-              </div>
-            )}
           </div>
         </ScrollArea>
 
-        {/* Side panel — image preview */}
+        {/* Image panel — only when selected */}
         {selectedResult && (
-          <div className="w-[45%] min-w-[360px] border-l border-border bg-card flex flex-col">
-            <div className="px-4 py-2 border-b border-border flex items-center justify-between">
+          <div className="flex-1 flex flex-col bg-background">
+            <div className="px-4 py-2 border-b border-border bg-card flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-mono text-foreground/80">{selectedResult.time}</span>
                 {selectedResult.anomalyReject && (
@@ -206,7 +189,7 @@ const History = () => {
             <div className="flex-1 flex items-center justify-center p-4">
               <button
                 onClick={() => setDisplayMode((m) => (m === "image" ? "overlay" : "image"))}
-                className="relative rounded border border-border bg-background overflow-hidden cursor-pointer hover:border-primary/30 transition-colors w-full max-w-[640px] aspect-video flex items-center justify-center"
+                className="rounded border border-border bg-card overflow-hidden cursor-pointer hover:border-primary/30 transition-colors w-full max-w-[720px] aspect-video flex items-center justify-center"
                 title="Click to toggle overlay"
               >
                 <div className="text-center space-y-2">
