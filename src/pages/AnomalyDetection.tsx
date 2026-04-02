@@ -46,7 +46,7 @@ const AnomalyDetection = () => {
   const { connected, lastMessage, sendJson } = useWebSocket(WS_URL);
 
   const [anomalyState, setAnomalyState] = useState<AnomalyBackendState | null>(null);
-
+ 
   useEffect(() => {
     if (lastMessage?.type === "anomaly.state") {
       setAnomalyState((lastMessage.state?.anomaly as AnomalyBackendState) ?? null);
