@@ -75,9 +75,9 @@ const AnomalySidebar = ({
   onAutoScrollToggle,
 }: AnomalySidebarProps) => {
   return (
-    <aside className="w-[20%] min-w-[220px] max-w-[320px] shrink-0 border-r border-border bg-card flex flex-col overflow-hidden">
-      <div className="px-3 py-2 border-b border-border">
-        <h2 className="text-[11px] font-semibold text-foreground uppercase tracking-wider">
+    <aside className="w-[20%] min-w-[220px] max-w-[320px] shrink-0 border-r border-sidebar-border bg-sidebar flex flex-col overflow-hidden">
+      <div className="px-3 py-2 border-b border-sidebar-border">
+        <h2 className="text-[11px] font-semibold text-sidebar-foreground uppercase tracking-wider">
           Anomaly Detection Settings
         </h2>
       </div>
