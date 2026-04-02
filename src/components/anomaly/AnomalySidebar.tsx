@@ -175,19 +175,22 @@ const TrainPanel = ({
 
   return (
     <>
-      <div className="space-y-1">
-        <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
-          Count
-        </label>
-        <Input
-          type="number"
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+            Count
+          </label>
+          <span className="text-[11px] font-mono font-semibold text-foreground">
+            {bankSize}
+          </span>
+        </div>
+        <Slider
+          value={[bankSize]}
+          onValueChange={([v]) => onBankSizeChange(v)}
           min={1}
           max={100}
-          value={bankSize}
-          onChange={(e) =>
-            onBankSizeChange(Math.max(1, Math.min(100, Number(e.target.value))))
-          }
-          className="h-7 text-[11px] font-mono bg-secondary border-border"
+          step={1}
+          className="w-full"
         />
       </div>
 
