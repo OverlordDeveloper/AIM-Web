@@ -223,18 +223,18 @@ const History = () => {
         </div>
 
         {/* Right panel — 70% image viewer */}
-        <div className="flex-1 flex items-center justify-center bg-background relative">
+        <div className="flex-1 flex flex-col items-center justify-center bg-background relative p-4">
           {selectedResult ? (
-            <div className="flex flex-col items-center gap-3">
-              {/* Placeholder image area */}
+            <>
               <button
                 onClick={() =>
                   setDisplayMode((m) => (m === "image" ? "overlay" : "image"))
                 }
-                className="relative rounded border border-border bg-card overflow-hidden cursor-pointer hover:border-primary/40 transition-colors"
+                className="relative rounded border border-border bg-card overflow-hidden cursor-pointer hover:border-primary/40 transition-colors aspect-square"
+                style={{ width: 'min(calc(100% - 2rem), calc(100vh - 10rem))', height: 'min(calc(100% - 2rem), calc(100vh - 10rem))' }}
                 title="Click to toggle overlay"
               >
-                <div className="w-[640px] h-[480px] flex items-center justify-center">
+                <div className="w-full h-full flex items-center justify-center">
                   <div className="text-center space-y-2">
                     <ImageIcon className="w-10 h-10 text-muted-foreground/30 mx-auto" />
                     <p className="text-[11px] text-muted-foreground font-mono">
@@ -246,7 +246,7 @@ const History = () => {
                   </div>
                 </div>
               </button>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mt-2 shrink-0">
                 <span className="text-[10px] text-muted-foreground font-mono">
                   {selectedResult.time}
                 </span>
@@ -261,7 +261,7 @@ const History = () => {
                   </Badge>
                 )}
               </div>
-            </div>
+            </>
           ) : (
             <div className="text-center space-y-2">
               <ImageIcon className="w-8 h-8 text-muted-foreground/20 mx-auto" />
