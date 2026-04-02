@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
 import { X, RotateCcw, Hammer, Play, Brain, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AnomalyItem } from "@/pages/AnomalyDetection";
@@ -175,19 +175,22 @@ const TrainPanel = ({
 
   return (
     <>
-      <div className="space-y-1">
-        <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
-          Count
-        </label>
-        <Input
-          type="number"
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+            Count
+          </label>
+          <span className="text-[11px] font-mono font-semibold text-foreground">
+            {bankSize}
+          </span>
+        </div>
+        <Slider
+          value={[bankSize]}
+          onValueChange={([v]) => onBankSizeChange(v)}
           min={1}
           max={100}
-          value={bankSize}
-          onChange={(e) =>
-            onBankSizeChange(Math.max(1, Math.min(100, Number(e.target.value))))
-          }
-          className="h-7 text-[11px] font-mono bg-secondary border-border"
+          step={1}
+          className="w-full"
         />
       </div>
 
