@@ -21,7 +21,7 @@ const TopNav = ({ connected }: { connected: boolean }) => {
                 "flex items-center gap-1.5 px-3 py-1.5 rounded text-[11px] font-medium transition-colors",
                 isActive
                   ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )
             }
           >

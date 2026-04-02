@@ -104,7 +104,7 @@ const Index = () => {
 
       <div className="flex-1 flex overflow-hidden">
         <aside
-          className={`shrink-0 border-r border-sidebar-border bg-sidebar flex flex-col transition-all duration-300 overflow-hidden ${
+          className={`shrink-0 border-r border-sidebar-border bg-card flex flex-col transition-all duration-300 overflow-hidden ${
             controlsOpen ? "w-64" : "w-10"
           }`}
         >
@@ -152,11 +152,11 @@ const Index = () => {
                       { key: "drawTracking", label: "Draw Tracking" },
                     ].map(({ key, label }) => (
                       <label key={key} className="flex items-center gap-2 cursor-pointer group">
-                        <Checkbox
-                          checked={(config.classic as any)[key]}
-                          onCheckedChange={(v) => handleConfigUpdate(`classic.${key}`, !!v)}
-                          className="h-3.5 w-3.5 border-sidebar-foreground/30 data-[state=checked]:bg-sidebar-primary data-[state=checked]:border-sidebar-primary"
-                        />
+                      <Checkbox
+                        checked={(config.classic as any)[key]}
+                        onCheckedChange={(v) => handleConfigUpdate(`classic.${key}`, !!v)}
+                        className="h-3.5 w-3.5 border-sidebar-foreground/30 data-[state=checked]:bg-transparent data-[state=checked]:border-sidebar-primary"
+                      />
                         <span className="text-[10px] font-mono text-sidebar-foreground/70 group-hover:text-sidebar-foreground transition-colors">
                           {label}
                         </span>
