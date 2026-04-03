@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { X, RotateCcw, Hammer, Play, Brain, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { AnomalyItem } from "@/pages/AnomalyDetection";
+import type { AnomalyRecord } from "@/pages/AnomalyDetection";
 
 interface AnomalySidebarProps {
   mode: "train" | "detect";
@@ -20,9 +20,9 @@ interface AnomalySidebarProps {
   onResetMemory: () => void;
   onBuild: () => void;
   onToggleMemoryImage: (index: number) => void;
-  anomalyItems: AnomalyItem[];
-  selectedItem: number;
-  onSelectItem: (index: number) => void;
+  anomalyItems: AnomalyRecord[];
+  selectedRecordId: number | null;
+  onSelectRecord: (id: number) => void;
   anomalyDetectEnabled: boolean;
   onAnomalyDetectChange: (enabled: boolean) => void;
   rejectEnabled: boolean;
@@ -52,6 +52,20 @@ const MemoryStatusBadge = ({ status }: { status: AnomalySidebarProps["memoryStat
   );
 };
 
+const formatRecordTime = (timestamp: string) => {
+  const date = new Date(timestamp);
+
+  if (Number.isNaN(date.getTime())) {
+    return timestamp;
+  }
+
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+};
+
 const AnomalySidebar = ({
   mode,
   onModeChange,
@@ -65,8 +79,8 @@ const AnomalySidebar = ({
   onBuild,
   onToggleMemoryImage,
   anomalyItems,
-  selectedItem,
-  onSelectItem,
+  selectedRecordId,
+  onSelectRecord,
   anomalyDetectEnabled,
   onAnomalyDetectChange,
   rejectEnabled,
@@ -130,8 +144,8 @@ const AnomalySidebar = ({
             <DetectPanel
               memoryStatus={memoryStatus}
               anomalyItems={anomalyItems}
-              selectedItem={selectedItem}
-              onSelectItem={onSelectItem}
+              selectedRecordId={selectedRecordId}
+              onSelectRecord={onSelectRecord}
               anomalyDetectEnabled={anomalyDetectEnabled}
               onAnomalyDetectChange={onAnomalyDetectChange}
               rejectEnabled={rejectEnabled}
@@ -258,8 +272,8 @@ const TrainPanel = ({
               )}
 
               {!img.checked && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                  <X className="w-8 h-8 text-destructive opacity-80" strokeWidth={3} />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <X className="w-16 h-16 text-destructive opacity-90" strokeWidth={3} />
                 </div>
               )}
             </button>
@@ -273,8 +287,8 @@ const TrainPanel = ({
 const DetectPanel = ({
   memoryStatus,
   anomalyItems,
-  selectedItem,
-  onSelectItem,
+  selectedRecordId,
+  onSelectRecord,
   anomalyDetectEnabled,
   onAnomalyDetectChange,
   rejectEnabled,
@@ -285,8 +299,8 @@ const DetectPanel = ({
   AnomalySidebarProps,
   | "memoryStatus"
   | "anomalyItems"
-  | "selectedItem"
-  | "onSelectItem"
+  | "selectedRecordId"
+  | "onSelectRecord"
   | "anomalyDetectEnabled"
   | "onAnomalyDetectChange"
   | "rejectEnabled"
@@ -346,26 +360,42 @@ const DetectPanel = ({
           Detections ({anomalyItems.length})
         </span>
 
-        <ScrollArea className="h-[300px]">
-          {anomalyItems.map((item, index) => (
-            <button
-              key={item.id}
-              onClick={() => onSelectItem(index)}
-              className={cn(
-                "w-full text-left px-2 py-1.5 rounded text-[11px] font-mono transition-colors",
-                selectedItem === index
-                  ? "bg-primary/15 text-primary"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              )}
-            >
-              <div className="flex justify-between items-center">
-                <span>{item.name}</span>
-                <span className="text-destructive font-semibold">
-                  {item.value.toFixed(1)}
-                </span>
-              </div>
-            </button>
-          ))}
+        <ScrollArea className="h-[300px] rounded border border-border bg-secondary/30 p-1">
+          {anomalyItems.map((item) => {
+            const isSelected = selectedRecordId === item.id;
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => onSelectRecord(item.id)}
+                className={cn(
+                  "w-full text-left px-2 py-1.5 rounded text-[11px] font-mono transition-colors",
+                  isSelected
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                )}
+              >
+                <div className="flex justify-between items-center gap-2">
+                  <span className="truncate">{formatRecordTime(item.timestamp)}</span>
+                  <span className="text-destructive font-semibold shrink-0">
+                    {item.anomalyValue.toFixed(1)}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center mt-0.5 text-[10px]">
+                  <span className="text-muted-foreground">#{item.id}</span>
+                  <span
+                    className={cn(
+                      "font-semibold",
+                      item.anomalyReject ? "text-destructive" : "text-muted-foreground"
+                    )}
+                  >
+                    {item.anomalyReject ? "REJECT" : "OK"}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
 
           {anomalyItems.length === 0 && (
             <p className="text-[10px] text-muted-foreground text-center py-4">
