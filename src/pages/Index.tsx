@@ -6,6 +6,7 @@ import TopNav from "@/components/TopNav";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useInspectionConfig } from "@/hooks/useInspectionConfig";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
 import { Settings, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -40,6 +41,9 @@ const Index = () => {
   const { config, updateConfig, setConfig } = useInspectionConfig();
   const [controlsOpen, setControlsOpen] = useState(true);
   const [cameraSettings, setCameraSettings] = useState<CameraSettings>(DEFAULT_CAMERA_SETTINGS);
+  const [hardwareCapture, setHardwareCapture] = useState(false);
+  const [timedCapture, setTimedCapture] = useState(false);
+  const [timedCaptureFps, setTimedCaptureFps] = useState(1);
 
   useEffect(() => {
     if (!lastMessage) return;
@@ -180,6 +184,48 @@ const Index = () => {
                 onToggle={() => handleConfigUpdate("seg.enabled", !config.seg.enabled)}
               >
                 <p className="text-[10px] font-mono text-muted-foreground">Segmentation active…</p>
+              </ProcessingCard>
+
+              <ProcessingCard
+                title="Hardware Capture"
+                enabled={hardwareCapture}
+                onToggle={() => {
+                  setHardwareCapture(!hardwareCapture);
+                  sendJson({ type: "config.update", path: "hardwareCapture.enabled", value: !hardwareCapture });
+                }}
+              >
+                <p className="text-[10px] font-mono text-muted-foreground">Trigger capture via hardware signal</p>
+              </ProcessingCard>
+
+              <ProcessingCard
+                title="Timed Capture"
+                enabled={timedCapture}
+                onToggle={() => {
+                  setTimedCapture(!timedCapture);
+                  sendJson({ type: "config.update", path: "timedCapture.enabled", value: !timedCapture });
+                }}
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono text-muted-foreground">FPS</span>
+                    <span className="text-[10px] font-mono text-sidebar-foreground">{timedCaptureFps}</span>
+                  </div>
+                  <Slider
+                    value={[timedCaptureFps]}
+                    onValueChange={([v]) => {
+                      setTimedCaptureFps(v);
+                      sendJson({ type: "config.update", path: "timedCapture.fps", value: v });
+                    }}
+                    min={1}
+                    max={10}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-[9px] font-mono text-muted-foreground/50">
+                    <span>1</span>
+                    <span>10</span>
+                  </div>
+                </div>
               </ProcessingCard>
             </div>
           )}
