@@ -251,7 +251,7 @@ const Index = () => {
                     step={1}
                     className="w-full"
                   />
-                  <div className="flex justify-between text-[9px] font-mono text-muted-foreground/50">
+                  <div className="flex justify-between text-[9px] font-mono text-sidebar-foreground/40">
                     <span>1</span>
                     <span>10</span>
                   </div>
