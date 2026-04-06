@@ -53,7 +53,6 @@ const History = () => {
   const [filterAnomaly, setFilterAnomaly] = useState(true);
   const [filterYolo, setFilterYolo] = useState(true);
   const [displayMode, setDisplayMode] = useState<"image" | "overlay">("image");
-  const [advancedMode, setAdvancedMode] = useState(false);
   const [dateFrom, setDateFrom] = useState<Date | undefined>(new Date());
   const [dateTo, setDateTo] = useState<Date | undefined>(new Date());
 
