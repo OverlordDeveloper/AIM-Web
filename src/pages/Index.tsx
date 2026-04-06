@@ -134,7 +134,7 @@ const CameraSidebarCard = ({
   );
 };
 
-
+const DEFAULT_CAMERA_SETTINGS: CameraSettings = {
   aeEnable: true,
   exposureTime: 1000,
   analogueGain: 2.0,
