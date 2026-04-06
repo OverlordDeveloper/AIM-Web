@@ -267,6 +267,12 @@ const Index = () => {
                   </div>
                 </div>
               </ProcessingCard>
+
+              {/* Camera Settings */}
+              <CameraSidebarCard
+                settings={cameraSettings}
+                onUpdate={handleCameraUpdate}
+              />
             </div>
           )}
         </aside>
@@ -281,11 +287,6 @@ const Index = () => {
               onSelectionCommit={handleSelectionCommit}
             />
           </div>
-
-          <CameraSettingsPanel
-            settings={cameraSettings}
-            onUpdate={handleCameraUpdate}
-          />
         </main>
       </div>
     </div>
