@@ -1,13 +1,15 @@
 import { useState, useMemo } from "react";
+import { format } from "date-fns";
 import TopNav from "@/components/TopNav";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, ChevronRight, RefreshCw, Filter, ImageIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, RefreshCw, Filter, ImageIcon, CalendarIcon, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const WS_URL = "ws://127.0.0.1:18080/api/ws/live";
@@ -51,6 +53,9 @@ const History = () => {
   const [filterAnomaly, setFilterAnomaly] = useState(true);
   const [filterYolo, setFilterYolo] = useState(true);
   const [displayMode, setDisplayMode] = useState<"image" | "overlay">("image");
+  const [advancedMode, setAdvancedMode] = useState(false);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(new Date());
+  const [dateTo, setDateTo] = useState<Date | undefined>(new Date());
 
   const filteredResults = useMemo(() => {
     return results.filter((r) => {
@@ -124,30 +129,98 @@ const History = () => {
               </Popover>
             </div>
 
-            {/* Time range */}
+            {/* Mode toggle */}
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground font-medium shrink-0">Time:</span>
-              <Select value={timeSelection} onValueChange={setTimeSelection}>
-                <SelectTrigger className="h-7 text-[11px] flex-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIME_OPTIONS.map((opt, i) => (
-                    <SelectItem key={i} value={String(i)} className="text-[11px]">
-                      {opt}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <span className="text-[11px] text-muted-foreground font-medium shrink-0">Mode:</span>
               <Button
-                variant="outline"
-                size="icon"
-                className="h-7 w-7 shrink-0"
-                title="Refresh"
+                variant={advancedMode ? "secondary" : "outline"}
+                size="sm"
+                className="h-7 text-[11px] gap-1.5 flex-1"
+                onClick={() => setAdvancedMode((v) => !v)}
               >
-                <RefreshCw className="w-3 h-3" />
+                <Settings2 className="w-3 h-3" />
+                {advancedMode ? "Advanced" : "Simple"}
               </Button>
             </div>
+
+            {/* Time range — simple or advanced */}
+            {!advancedMode ? (
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-muted-foreground font-medium shrink-0">Time:</span>
+                <Select value={timeSelection} onValueChange={setTimeSelection}>
+                  <SelectTrigger className="h-7 text-[11px] flex-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIME_OPTIONS.map((opt, i) => (
+                      <SelectItem key={i} value={String(i)} className="text-[11px]">
+                        {opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-7 w-7 shrink-0"
+                  title="Refresh"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-muted-foreground font-medium shrink-0 w-10">From:</span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5 flex-1 justify-start font-mono">
+                        <CalendarIcon className="w-3 h-3" />
+                        {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Pick date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dateFrom}
+                        onSelect={setDateFrom}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-muted-foreground font-medium shrink-0 w-10">To:</span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5 flex-1 justify-start font-mono">
+                        <CalendarIcon className="w-3 h-3" />
+                        {dateTo ? format(dateTo, "dd/MM/yyyy") : "Pick date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dateTo}
+                        onSelect={setDateTo}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-[11px] gap-1.5 w-full"
+                  title="Refresh"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Fetch results
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Results list */}
