@@ -197,7 +197,7 @@ const Index = () => {
                         onCheckedChange={(v) => handleConfigUpdate(`classic.${key}`, !!v)}
                         className="h-3.5 w-3.5 border-sidebar-foreground/30 data-[state=checked]:bg-transparent data-[state=checked]:border-sidebar-primary"
                       />
-                        <span className="text-[10px] font-mono text-sidebar-foreground/70 group-hover:text-sidebar-foreground transition-colors">
+                        <span className="text-[10px] font-mono text-sidebar-foreground/90 group-hover:text-sidebar-foreground transition-colors">
                           {label}
                         </span>
                       </label>
