@@ -219,7 +219,7 @@ const Index = () => {
                 enabled={config.seg.enabled}
                 onToggle={() => handleConfigUpdate("seg.enabled", !config.seg.enabled)}
               >
-                <p className="text-[10px] font-mono text-muted-foreground">Segmentation active…</p>
+                <p className="text-[10px] font-mono text-sidebar-foreground/80">Segmentation active…</p>
               </ProcessingCard>
 
               <ProcessingCard
