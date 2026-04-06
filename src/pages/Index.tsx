@@ -185,6 +185,48 @@ const Index = () => {
               >
                 <p className="text-[10px] font-mono text-muted-foreground">Segmentation active…</p>
               </ProcessingCard>
+
+              <ProcessingCard
+                title="Hardware Capture"
+                enabled={hardwareCapture}
+                onToggle={() => {
+                  setHardwareCapture(!hardwareCapture);
+                  sendJson({ type: "config.update", path: "hardwareCapture.enabled", value: !hardwareCapture });
+                }}
+              >
+                <p className="text-[10px] font-mono text-muted-foreground">Trigger capture via hardware signal</p>
+              </ProcessingCard>
+
+              <ProcessingCard
+                title="Timed Capture"
+                enabled={timedCapture}
+                onToggle={() => {
+                  setTimedCapture(!timedCapture);
+                  sendJson({ type: "config.update", path: "timedCapture.enabled", value: !timedCapture });
+                }}
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono text-muted-foreground">FPS</span>
+                    <span className="text-[10px] font-mono text-sidebar-foreground">{timedCaptureFps}</span>
+                  </div>
+                  <Slider
+                    value={[timedCaptureFps]}
+                    onValueChange={([v]) => {
+                      setTimedCaptureFps(v);
+                      sendJson({ type: "config.update", path: "timedCapture.fps", value: v });
+                    }}
+                    min={1}
+                    max={10}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-[9px] font-mono text-muted-foreground/50">
+                    <span>1</span>
+                    <span>10</span>
+                  </div>
+                </div>
+              </ProcessingCard>
             </div>
           )}
         </aside>
