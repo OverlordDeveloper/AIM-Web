@@ -237,7 +237,7 @@ const Index = () => {
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono text-muted-foreground">FPS</span>
+                    <span className="text-[10px] font-mono text-sidebar-foreground/80">FPS</span>
                     <span className="text-[10px] font-mono text-sidebar-foreground">{timedCaptureFps}</span>
                   </div>
                   <Slider
