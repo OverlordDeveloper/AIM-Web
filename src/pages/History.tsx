@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import TopNav from "@/components/TopNav";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -56,6 +56,12 @@ const History = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedHour, setSelectedHour] = useState("12");
   const [selectedMinute, setSelectedMinute] = useState("00");
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const filteredResults = useMemo(() => {
     return results.filter((r) => {
@@ -85,7 +91,7 @@ const History = () => {
           <div className="px-4 py-3 border-b border-border space-y-3">
             <div className="relative flex items-center justify-center">
               <span className="absolute left-0 text-xs text-muted-foreground/50 font-mono">
-                {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "--"} {selectedHour}:{selectedMinute}
+                {format(currentTime, "dd/MM/yyyy HH:mm:ss")}
               </span>
               <h2 className="text-xs font-semibold text-foreground tracking-wider uppercase">
                 History
