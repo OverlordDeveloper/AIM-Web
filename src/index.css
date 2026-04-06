@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 16% 8%;
+    --foreground: 220 10% 78%;
+
+    --card: 220 14% 11%;
+    --card-foreground: 220 10% 78%;
+
+    --popover: 220 14% 11%;
+    --popover-foreground: 220 10% 78%;
+
+    --primary: 45 100% 55%;
+    --primary-foreground: 220 16% 8%;
+
+    --secondary: 220 12% 16%;
+    --secondary-foreground: 220 10% 70%;
+
+    --muted: 220 10% 15%;
+    --muted-foreground: 220 8% 45%;
+
+    --accent: 45 100% 55%;
+    --accent-foreground: 220 16% 8%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 10% 18%;
+    --input: 220 10% 18%;
+    --ring: 45 100% 55%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 200 18% 12%;
+    --sidebar-foreground: 200 10% 72%;
+    --sidebar-primary: 45 100% 55%;
+    --sidebar-primary-foreground: 200 18% 8%;
+    --sidebar-accent: 200 14% 18%;
+    --sidebar-accent-foreground: 200 10% 72%;
+    --sidebar-border: 200 12% 20%;
+    --sidebar-ring: 45 100% 55%;
+
+    --glow: 45 100% 55%;
+    --status-online: 142 71% 45%;
+    --status-offline: 0 72% 51%;
+    --warning: 25 95% 53%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  code, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
