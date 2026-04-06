@@ -83,9 +83,14 @@ const History = () => {
         <div className="w-[30%] min-w-[280px] flex flex-col border-r border-border bg-card">
           {/* Header */}
           <div className="px-4 py-3 border-b border-border space-y-3">
-            <h2 className="text-xs font-semibold text-foreground tracking-wider uppercase text-center">
-              History
-            </h2>
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-[9px] text-muted-foreground/50 font-mono">
+                {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "--"} {selectedHour}:{selectedMinute}
+              </span>
+              <h2 className="text-xs font-semibold text-foreground tracking-wider uppercase">
+                History
+              </h2>
+            </div>
 
             {/* Filters */}
             <div className="flex items-center gap-2">
