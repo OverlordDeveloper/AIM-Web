@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import TopNav from "@/components/TopNav";
 import { useWebSocket } from "@/hooks/useWebSocket";
