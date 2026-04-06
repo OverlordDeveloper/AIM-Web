@@ -197,7 +197,7 @@ const Index = () => {
                         onCheckedChange={(v) => handleConfigUpdate(`classic.${key}`, !!v)}
                         className="h-3.5 w-3.5 border-sidebar-foreground/30 data-[state=checked]:bg-transparent data-[state=checked]:border-sidebar-primary"
                       />
-                        <span className="text-[10px] font-mono text-sidebar-foreground/70 group-hover:text-sidebar-foreground transition-colors">
+                        <span className="text-[10px] font-mono text-sidebar-foreground/90 group-hover:text-sidebar-foreground transition-colors">
                           {label}
                         </span>
                       </label>
@@ -211,7 +211,7 @@ const Index = () => {
                 enabled={config.yolo.enabled}
                 onToggle={() => handleConfigUpdate("yolo.enabled", !config.yolo.enabled)}
               >
-                <p className="text-[10px] font-mono text-muted-foreground">Running object detection…</p>
+                <p className="text-[10px] font-mono text-sidebar-foreground/80">Running object detection…</p>
               </ProcessingCard>
 
               <ProcessingCard
@@ -219,7 +219,7 @@ const Index = () => {
                 enabled={config.seg.enabled}
                 onToggle={() => handleConfigUpdate("seg.enabled", !config.seg.enabled)}
               >
-                <p className="text-[10px] font-mono text-muted-foreground">Segmentation active…</p>
+                <p className="text-[10px] font-mono text-sidebar-foreground/80">Segmentation active…</p>
               </ProcessingCard>
 
               <ProcessingCard
@@ -227,7 +227,7 @@ const Index = () => {
                 enabled={hardwareCapture}
                 onToggle={() => handleCaptureToggle("hardwareCapture")}
               >
-                <p className="text-[10px] font-mono text-muted-foreground">Trigger capture via hardware signal</p>
+                <p className="text-[10px] font-mono text-sidebar-foreground/80">Trigger capture via hardware signal</p>
               </ProcessingCard>
 
               <ProcessingCard
@@ -237,7 +237,7 @@ const Index = () => {
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono text-muted-foreground">FPS</span>
+                    <span className="text-[10px] font-mono text-sidebar-foreground/80">FPS</span>
                     <span className="text-[10px] font-mono text-sidebar-foreground">{timedCaptureFps}</span>
                   </div>
                   <Slider
@@ -251,7 +251,7 @@ const Index = () => {
                     step={1}
                     className="w-full"
                   />
-                  <div className="flex justify-between text-[9px] font-mono text-muted-foreground/50">
+                  <div className="flex justify-between text-[9px] font-mono text-sidebar-foreground/40">
                     <span>1</span>
                     <span>10</span>
                   </div>
