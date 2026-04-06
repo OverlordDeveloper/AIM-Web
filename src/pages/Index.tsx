@@ -72,6 +72,13 @@ const Index = () => {
     });
   };
 
+  const disableCaptureModes = () => {
+    setHardwareCapture(false);
+    setTimedCapture(false);
+    sendJson({ type: "config.update", path: "hardwareCapture.enabled", value: false });
+    sendJson({ type: "config.update", path: "timedCapture.enabled", value: false });
+  };
+
   const handleConfigUpdate = (path: string, value: number | boolean) => {
     if (path.endsWith(".enabled") && value === true) {
       const groups = ["classic", "yolo", "seg"];
@@ -83,10 +90,39 @@ const Index = () => {
           updateConfig(`${g}.enabled`, false);
           sendJson({ type: "config.update", path: `${g}.enabled`, value: false });
         });
+
+      disableCaptureModes();
     }
 
     updateConfig(path, value);
     sendJson({ type: "config.update", path, value });
+  };
+
+  const handleCaptureToggle = (mode: "hardwareCapture" | "timedCapture") => {
+    const enabling = mode === "hardwareCapture" ? !hardwareCapture : !timedCapture;
+
+    if (enabling) {
+      // Disable all processing modes
+      ["classic", "yolo", "seg"].forEach((g) => {
+        updateConfig(`${g}.enabled`, false);
+        sendJson({ type: "config.update", path: `${g}.enabled`, value: false });
+      });
+      // Disable the other capture mode
+      if (mode === "hardwareCapture") {
+        setTimedCapture(false);
+        sendJson({ type: "config.update", path: "timedCapture.enabled", value: false });
+        setHardwareCapture(true);
+      } else {
+        setHardwareCapture(false);
+        sendJson({ type: "config.update", path: "hardwareCapture.enabled", value: false });
+        setTimedCapture(true);
+      }
+    } else {
+      if (mode === "hardwareCapture") setHardwareCapture(false);
+      else setTimedCapture(false);
+    }
+
+    sendJson({ type: "config.update", path: `${mode}.enabled`, value: enabling });
   };
 
   const handleCameraUpdate = (path: keyof CameraSettings, value: number | boolean) => {
