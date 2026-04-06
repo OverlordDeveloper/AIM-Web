@@ -147,37 +147,47 @@ const History = () => {
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    variant={(dateFrom || dateTo) ? "secondary" : "outline"}
+                    variant="outline"
                     size="icon"
                     className="h-7 w-7 shrink-0"
-                    title="Custom date range"
+                    title="Pick date & time"
                   >
                     <Clock className="w-3 h-3" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-3" align="end">
                   <div className="space-y-3">
-                    <p className="text-[11px] font-medium text-foreground">Custom Date Range</p>
-                    <div className="space-y-2">
-                      <div className="space-y-1">
-                        <span className="text-[10px] text-muted-foreground font-medium">From</span>
-                        <Calendar
-                          mode="single"
-                          selected={dateFrom}
-                          onSelect={setDateFrom}
-                          initialFocus
-                          className={cn("p-2 pointer-events-auto rounded border border-border")}
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-[10px] text-muted-foreground font-medium">To</span>
-                        <Calendar
-                          mode="single"
-                          selected={dateTo}
-                          onSelect={setDateTo}
-                          className={cn("p-2 pointer-events-auto rounded border border-border")}
-                        />
-                      </div>
+                    <p className="text-[11px] font-medium text-foreground">Select Date & Time</p>
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      initialFocus
+                      className={cn("p-2 pointer-events-auto rounded border border-border")}
+                    />
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground font-medium">Time:</span>
+                      <Select value={selectedHour} onValueChange={setSelectedHour}>
+                        <SelectTrigger className="h-7 w-16 text-[11px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-48">
+                          {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0")).map((h) => (
+                            <SelectItem key={h} value={h} className="text-[11px]">{h}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <span className="text-[11px] text-foreground font-bold">:</span>
+                      <Select value={selectedMinute} onValueChange={setSelectedMinute}>
+                        <SelectTrigger className="h-7 w-16 text-[11px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-48">
+                          {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map((m) => (
+                            <SelectItem key={m} value={m} className="text-[11px]">{m}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <Button
                       variant="outline"
