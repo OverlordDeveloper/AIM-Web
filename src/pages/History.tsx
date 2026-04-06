@@ -1,13 +1,15 @@
 import { useState, useMemo } from "react";
+import { format } from "date-fns";
 import TopNav from "@/components/TopNav";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, ChevronRight, RefreshCw, Filter, ImageIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, RefreshCw, Filter, ImageIcon, CalendarIcon, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const WS_URL = "ws://127.0.0.1:18080/api/ws/live";
