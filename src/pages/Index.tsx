@@ -35,7 +35,106 @@ export interface CameraSettings {
   height: number;
 }
 
-const DEFAULT_CAMERA_SETTINGS: CameraSettings = {
+const CameraSidebarCard = ({
+  settings,
+  onUpdate,
+}: {
+  settings: CameraSettings;
+  onUpdate: (key: keyof CameraSettings, value: number | boolean) => void;
+}) => {
+  const customRes = useMemo(() => {
+    return !RESOLUTION_PRESETS.some(
+      (p) => p.w !== 0 && p.w === settings.width && p.h === settings.height
+    );
+  }, [settings.width, settings.height]);
+
+  const currentPreset = customRes
+    ? "Custom"
+    : RESOLUTION_PRESETS.find((p) => p.w === settings.width && p.h === settings.height)?.label ?? "Custom";
+
+  const handlePreset = (val: string) => {
+    const preset = RESOLUTION_PRESETS.find((p) => p.label === val);
+    if (!preset || preset.w === 0) return;
+    onUpdate("width", preset.w);
+    onUpdate("height", preset.h);
+  };
+
+  return (
+    <div className="rounded-md border border-sidebar-border bg-sidebar-accent/50 p-3">
+      <Collapsible>
+        <CollapsibleTrigger className="flex items-center gap-2 w-full cursor-pointer select-none group">
+          <Camera className="w-3.5 h-3.5 text-sidebar-primary shrink-0" />
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/70 group-hover:text-sidebar-foreground/90 transition-colors">
+            Camera
+          </h2>
+          <ChevronRight className="w-3 h-3 text-sidebar-foreground/40 ml-auto transition-transform group-data-[state=open]:rotate-90" />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2.5 border-t border-sidebar-border/50 pt-3 mt-3">
+          {/* Resolution */}
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/90">
+              Resolution
+            </span>
+            <Select value={currentPreset} onValueChange={handlePreset}>
+              <SelectTrigger className="h-7 text-xs font-mono bg-sidebar border-sidebar-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {RESOLUTION_PRESETS.map((p) => (
+                  <SelectItem key={p.label} value={p.label} className="text-xs font-mono">
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {customRes && (
+              <div className="flex items-center gap-1.5">
+                <Input
+                  type="number"
+                  value={settings.width}
+                  onChange={(e) => onUpdate("width", Number(e.target.value))}
+                  className="h-6 text-[10px] font-mono bg-sidebar border-sidebar-border w-16"
+                />
+                <span className="text-sidebar-foreground/50 text-[10px]">×</span>
+                <Input
+                  type="number"
+                  value={settings.height}
+                  onChange={(e) => onUpdate("height", Number(e.target.value))}
+                  className="h-6 text-[10px] font-mono bg-sidebar border-sidebar-border w-16"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Checkboxes */}
+          {[
+            { key: "aeEnable" as const, label: "Auto Exposure" },
+            { key: "awbEnable" as const, label: "Auto WB" },
+          ].map(({ key, label }) => (
+            <label key={key} className="flex items-center gap-2 cursor-pointer group">
+              <Checkbox
+                checked={settings[key] as boolean}
+                onCheckedChange={(v) => onUpdate(key, !!v)}
+                className="h-3.5 w-3.5 border-sidebar-foreground/30 data-[state=checked]:bg-transparent data-[state=checked]:border-sidebar-primary"
+              />
+              <span className="text-[10px] font-mono text-sidebar-foreground/90 group-hover:text-sidebar-foreground transition-colors">
+                {label}
+              </span>
+            </label>
+          ))}
+
+          {/* Sliders */}
+          <InspectionSlider label="Exposure (µs)" value={settings.exposureTime} onChange={(v) => onUpdate("exposureTime", v)} max={100000} min={1} />
+          <InspectionSlider label="Analogue Gain" value={settings.analogueGain} onChange={(v) => onUpdate("analogueGain", v)} max={16} min={0} step={0.1} />
+          <InspectionSlider label="Brightness" value={settings.brightness} onChange={(v) => onUpdate("brightness", v)} max={1} min={-1} step={0.01} />
+          <InspectionSlider label="Contrast" value={settings.contrast} onChange={(v) => onUpdate("contrast", v)} max={10} min={0} step={0.1} />
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+};
+
+
   aeEnable: true,
   exposureTime: 1000,
   analogueGain: 2.0,
