@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, ChevronRight, RefreshCw, Filter, ImageIcon, CalendarIcon, Settings2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, RefreshCw, Filter, ImageIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const WS_URL = "ws://127.0.0.1:18080/api/ws/live";
@@ -53,7 +53,6 @@ const History = () => {
   const [filterAnomaly, setFilterAnomaly] = useState(true);
   const [filterYolo, setFilterYolo] = useState(true);
   const [displayMode, setDisplayMode] = useState<"image" | "overlay">("image");
-  const [advancedMode, setAdvancedMode] = useState(false);
   const [dateFrom, setDateFrom] = useState<Date | undefined>(new Date());
   const [dateTo, setDateTo] = useState<Date | undefined>(new Date());
 
@@ -129,98 +128,76 @@ const History = () => {
               </Popover>
             </div>
 
-            {/* Mode toggle */}
+            {/* Time range */}
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground font-medium shrink-0">Mode:</span>
+              <span className="text-[11px] text-muted-foreground font-medium shrink-0">Time:</span>
+              <Select value={timeSelection} onValueChange={setTimeSelection}>
+                <SelectTrigger className="h-7 text-[11px] flex-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIME_OPTIONS.map((opt, i) => (
+                    <SelectItem key={i} value={String(i)} className="text-[11px]">
+                      {opt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={(dateFrom || dateTo) ? "secondary" : "outline"}
+                    size="icon"
+                    className="h-7 w-7 shrink-0"
+                    title="Custom date range"
+                  >
+                    <Clock className="w-3 h-3" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-3" align="end">
+                  <div className="space-y-3">
+                    <p className="text-[11px] font-medium text-foreground">Custom Date Range</p>
+                    <div className="space-y-2">
+                      <div className="space-y-1">
+                        <span className="text-[10px] text-muted-foreground font-medium">From</span>
+                        <Calendar
+                          mode="single"
+                          selected={dateFrom}
+                          onSelect={setDateFrom}
+                          initialFocus
+                          className={cn("p-2 pointer-events-auto rounded border border-border")}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] text-muted-foreground font-medium">To</span>
+                        <Calendar
+                          mode="single"
+                          selected={dateTo}
+                          onSelect={setDateTo}
+                          className={cn("p-2 pointer-events-auto rounded border border-border")}
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-[11px] gap-1.5 w-full"
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      Fetch results
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
               <Button
-                variant={advancedMode ? "secondary" : "outline"}
-                size="sm"
-                className="h-7 text-[11px] gap-1.5 flex-1"
-                onClick={() => setAdvancedMode((v) => !v)}
+                variant="outline"
+                size="icon"
+                className="h-7 w-7 shrink-0"
+                title="Refresh"
               >
-                <Settings2 className="w-3 h-3" />
-                {advancedMode ? "Advanced" : "Simple"}
+                <RefreshCw className="w-3 h-3" />
               </Button>
             </div>
-
-            {/* Time range — simple or advanced */}
-            {!advancedMode ? (
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-muted-foreground font-medium shrink-0">Time:</span>
-                <Select value={timeSelection} onValueChange={setTimeSelection}>
-                  <SelectTrigger className="h-7 text-[11px] flex-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIME_OPTIONS.map((opt, i) => (
-                      <SelectItem key={i} value={String(i)} className="text-[11px]">
-                        {opt}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7 shrink-0"
-                  title="Refresh"
-                >
-                  <RefreshCw className="w-3 h-3" />
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-muted-foreground font-medium shrink-0 w-10">From:</span>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5 flex-1 justify-start font-mono">
-                        <CalendarIcon className="w-3 h-3" />
-                        {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Pick date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={dateFrom}
-                        onSelect={setDateFrom}
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-muted-foreground font-medium shrink-0 w-10">To:</span>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5 flex-1 justify-start font-mono">
-                        <CalendarIcon className="w-3 h-3" />
-                        {dateTo ? format(dateTo, "dd/MM/yyyy") : "Pick date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={dateTo}
-                        onSelect={setDateTo}
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-[11px] gap-1.5 w-full"
-                  title="Refresh"
-                >
-                  <RefreshCw className="w-3 h-3" />
-                  Fetch results
-                </Button>
-              </div>
-            )}
           </div>
 
           {/* Results list */}
