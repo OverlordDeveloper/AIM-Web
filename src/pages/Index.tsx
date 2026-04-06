@@ -211,7 +211,7 @@ const Index = () => {
                 enabled={config.yolo.enabled}
                 onToggle={() => handleConfigUpdate("yolo.enabled", !config.yolo.enabled)}
               >
-                <p className="text-[10px] font-mono text-muted-foreground">Running object detection…</p>
+                <p className="text-[10px] font-mono text-sidebar-foreground/80">Running object detection…</p>
               </ProcessingCard>
 
               <ProcessingCard
