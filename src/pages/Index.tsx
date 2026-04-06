@@ -41,6 +41,9 @@ const Index = () => {
   const { config, updateConfig, setConfig } = useInspectionConfig();
   const [controlsOpen, setControlsOpen] = useState(true);
   const [cameraSettings, setCameraSettings] = useState<CameraSettings>(DEFAULT_CAMERA_SETTINGS);
+  const [hardwareCapture, setHardwareCapture] = useState(false);
+  const [timedCapture, setTimedCapture] = useState(false);
+  const [timedCaptureFps, setTimedCaptureFps] = useState(1);
 
   useEffect(() => {
     if (!lastMessage) return;
