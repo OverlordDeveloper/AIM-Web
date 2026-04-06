@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, ChevronRight, RefreshCw, Filter, ImageIcon, CalendarIcon, Settings2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, RefreshCw, Filter, ImageIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const WS_URL = "ws://127.0.0.1:18080/api/ws/live";
