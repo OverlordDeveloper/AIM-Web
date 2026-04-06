@@ -79,8 +79,8 @@ const History = () => {
     <div className="w-screen h-screen flex flex-col overflow-hidden">
       <TopNav connected={connected} />
       <div className="flex-1 flex overflow-hidden">
-        {/* Left sidebar — 30% */}
-        <div className="w-[30%] min-w-[280px] flex flex-col border-r border-border bg-card">
+        {/* Left sidebar — 22% */}
+        <div className="w-[22%] min-w-[240px] flex flex-col border-r border-border bg-card">
           {/* Header */}
           <div className="px-4 py-3 border-b border-border space-y-3">
             <div className="relative flex items-center justify-center">
