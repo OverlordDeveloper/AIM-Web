@@ -227,7 +227,7 @@ const Index = () => {
                 enabled={hardwareCapture}
                 onToggle={() => handleCaptureToggle("hardwareCapture")}
               >
-                <p className="text-[10px] font-mono text-muted-foreground">Trigger capture via hardware signal</p>
+                <p className="text-[10px] font-mono text-sidebar-foreground/80">Trigger capture via hardware signal</p>
               </ProcessingCard>
 
               <ProcessingCard
