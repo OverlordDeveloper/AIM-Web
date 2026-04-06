@@ -233,10 +233,7 @@ const Index = () => {
               <ProcessingCard
                 title="Timed Capture"
                 enabled={timedCapture}
-                onToggle={() => {
-                  setTimedCapture(!timedCapture);
-                  sendJson({ type: "config.update", path: "timedCapture.enabled", value: !timedCapture });
-                }}
+                onToggle={() => handleCaptureToggle("timedCapture")}
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
