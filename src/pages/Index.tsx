@@ -1,15 +1,25 @@
 import ProcessingCard from "@/components/ProcessingCard";
 import InspectionSlider from "@/components/InspectionSlider";
 import ImagePanel from "@/components/ImagePanel";
-import CameraSettingsPanel from "@/components/CameraSettingsDialog";
 import TopNav from "@/components/TopNav";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useInspectionConfig } from "@/hooks/useInspectionConfig";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import { Settings, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Settings, ChevronRight, Camera } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+
+const RESOLUTION_PRESETS = [
+  { label: "256 × 256", w: 256, h: 256 },
+  { label: "512 × 512", w: 512, h: 512 },
+  { label: "1024 × 1024", w: 1024, h: 1024 },
+  { label: "2048 × 2048", w: 2048, h: 2048 },
+  { label: "3040 × 3040", w: 3040, h: 3040 },
+  { label: "Custom", w: 0, h: 0 },
+];
 
 const protocol = window.location.protocol === "https:" ? "wss" : "ws";
 const WS_URL = `${protocol}://${window.location.hostname}:18080/api/ws/live`;
