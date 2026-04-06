@@ -84,7 +84,7 @@ const History = () => {
           {/* Header */}
           <div className="px-4 py-3 border-b border-border space-y-3">
             <div className="relative flex items-center justify-center">
-              <span className="absolute left-0 text-[10px] text-muted-foreground/50 font-mono">
+              <span className="absolute left-0 text-xs text-muted-foreground/50 font-mono">
                 {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "--"} {selectedHour}:{selectedMinute}
               </span>
               <h2 className="text-xs font-semibold text-foreground tracking-wider uppercase">
@@ -94,14 +94,14 @@ const History = () => {
 
             {/* Filters */}
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground font-medium shrink-0">Filters:</span>
+              <span className="text-xs text-muted-foreground font-medium shrink-0">Filters:</span>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5 flex-1">
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 flex-1">
                     <Filter className="w-3 h-3" />
                     Select filters
                     {activeFilterCount > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-4 px-1 text-[9px]">
+                      <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">
                         {activeFilterCount}
                       </Badge>
                     )}
@@ -117,7 +117,7 @@ const History = () => {
                           setCurrentPage(0);
                         }}
                       />
-                      <span className="text-[11px] text-foreground">Anomaly</span>
+                      <span className="text-xs text-foreground">Anomaly</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <Checkbox
@@ -127,7 +127,7 @@ const History = () => {
                           setCurrentPage(0);
                         }}
                       />
-                      <span className="text-[11px] text-foreground">YOLO</span>
+                      <span className="text-xs text-foreground">YOLO</span>
                     </label>
                   </div>
                 </PopoverContent>
@@ -136,14 +136,14 @@ const History = () => {
 
             {/* Time range */}
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground font-medium shrink-0">Time:</span>
+              <span className="text-xs text-muted-foreground font-medium shrink-0">Time:</span>
               <Select value={timeSelection} onValueChange={setTimeSelection}>
-                <SelectTrigger className="h-7 text-[11px] flex-1">
+                <SelectTrigger className="h-7 text-xs flex-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {TIME_OPTIONS.map((opt, i) => (
-                    <SelectItem key={i} value={String(i)} className="text-[11px]">
+                    <SelectItem key={i} value={String(i)} className="text-xs">
                       {opt}
                     </SelectItem>
                   ))}
@@ -162,7 +162,7 @@ const History = () => {
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-3" align="end">
                   <div className="space-y-3">
-                    <p className="text-[11px] font-medium text-foreground">Select Date & Time</p>
+                    <p className="text-xs font-medium text-foreground">Select Date & Time</p>
                     <Calendar
                       mode="single"
                       selected={selectedDate}
@@ -171,25 +171,25 @@ const History = () => {
                       className={cn("p-2 pointer-events-auto rounded border border-border")}
                     />
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground font-medium">Time:</span>
+                      <span className="text-xs text-muted-foreground font-medium">Time:</span>
                       <Select value={selectedHour} onValueChange={setSelectedHour}>
-                        <SelectTrigger className="h-7 w-16 text-[11px]">
+                        <SelectTrigger className="h-7 w-16 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="max-h-48">
                           {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0")).map((h) => (
-                            <SelectItem key={h} value={h} className="text-[11px]">{h}</SelectItem>
+                            <SelectItem key={h} value={h} className="text-xs">{h}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <span className="text-[11px] text-foreground font-bold">:</span>
+                      <span className="text-xs text-foreground font-bold">:</span>
                       <Select value={selectedMinute} onValueChange={setSelectedMinute}>
-                        <SelectTrigger className="h-7 w-16 text-[11px]">
+                        <SelectTrigger className="h-7 w-16 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="max-h-48">
                           {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map((m) => (
-                            <SelectItem key={m} value={m} className="text-[11px]">{m}</SelectItem>
+                            <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -197,7 +197,7 @@ const History = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-7 text-[11px] gap-1.5 w-full"
+                      className="h-7 text-xs gap-1.5 w-full"
                     >
                       <RefreshCw className="w-3 h-3" />
                       Fetch results
@@ -220,7 +220,7 @@ const History = () => {
           <ScrollArea className="flex-1">
             <div className="py-1">
               {pageResults.length === 0 && (
-                <p className="text-[11px] text-muted-foreground text-center py-8">
+                <p className="text-xs text-muted-foreground text-center py-8">
                   No results found
                 </p>
               )}
@@ -232,7 +232,7 @@ const History = () => {
                     setDisplayMode("image");
                   }}
                   className={cn(
-                    "w-full text-left px-3 py-1.5 flex items-center gap-2 text-[11px] font-mono transition-colors",
+                    "w-full text-left px-3 py-1.5 flex items-center gap-2 text-xs font-mono transition-colors",
                     selectedId === res.id
                       ? "bg-primary/15 text-primary"
                       : "text-foreground/80 hover:bg-secondary"
@@ -243,7 +243,7 @@ const History = () => {
                     {res.anomalyReject && (
                       <Badge
                         variant="secondary"
-                        className="h-4 px-1.5 text-[8px] font-semibold bg-[hsl(230,60%,70%)]/15 text-[hsl(230,60%,70%)] border-0"
+                        className="h-4 px-1.5 text-xs font-semibold bg-[hsl(230,60%,70%)]/15 text-[hsl(230,60%,70%)] border-0"
                       >
                         anomaly
                       </Badge>
@@ -251,7 +251,7 @@ const History = () => {
                     {res.yoloReject && (
                       <Badge
                         variant="secondary"
-                        className="h-4 px-1.5 text-[8px] font-semibold bg-[hsl(35,90%,60%)]/15 text-[hsl(35,90%,60%)] border-0"
+                        className="h-4 px-1.5 text-xs font-semibold bg-[hsl(35,90%,60%)]/15 text-[hsl(35,90%,60%)] border-0"
                       >
                         yolo
                       </Badge>
@@ -273,7 +273,7 @@ const History = () => {
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </Button>
-            <span className="text-[11px] font-mono text-muted-foreground min-w-[60px] text-center">
+            <span className="text-xs font-mono text-muted-foreground min-w-[60px] text-center">
               {currentPage + 1} / {totalPages}
             </span>
             <Button
@@ -303,26 +303,26 @@ const History = () => {
                 <div className="w-full h-full flex items-center justify-center">
                   <div className="text-center space-y-2">
                     <ImageIcon className="w-10 h-10 text-muted-foreground/30 mx-auto" />
-                    <p className="text-[11px] text-muted-foreground font-mono">
+                    <p className="text-xs text-muted-foreground font-mono">
                       {selectedResult.path}
                     </p>
-                    <p className="text-[10px] text-muted-foreground/60">
+                    <p className="text-xs text-muted-foreground/60">
                       Mode: {displayMode === "image" ? "Base Image" : "Image + Anomaly Overlay"}
                     </p>
                   </div>
                 </div>
               </button>
               <div className="flex items-center gap-2 mt-2 shrink-0">
-                <span className="text-[10px] text-muted-foreground font-mono">
+                <span className="text-xs text-muted-foreground font-mono">
                   {selectedResult.time}
                 </span>
                 {selectedResult.anomalyReject && (
-                  <Badge variant="secondary" className="text-[9px] bg-[hsl(230,60%,70%)]/15 text-[hsl(230,60%,70%)] border-0">
+                  <Badge variant="secondary" className="text-xs bg-[hsl(230,60%,70%)]/15 text-[hsl(230,60%,70%)] border-0">
                     anomaly
                   </Badge>
                 )}
                 {selectedResult.yoloReject && (
-                  <Badge variant="secondary" className="text-[9px] bg-[hsl(35,90%,60%)]/15 text-[hsl(35,90%,60%)] border-0">
+                  <Badge variant="secondary" className="text-xs bg-[hsl(35,90%,60%)]/15 text-[hsl(35,90%,60%)] border-0">
                     yolo
                   </Badge>
                 )}
@@ -331,7 +331,7 @@ const History = () => {
           ) : (
             <div className="text-center space-y-2">
               <ImageIcon className="w-8 h-8 text-muted-foreground/20 mx-auto" />
-              <p className="text-[11px] text-muted-foreground font-mono">
+              <p className="text-xs text-muted-foreground font-mono">
                 Select a result to view
               </p>
             </div>
