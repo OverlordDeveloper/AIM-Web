@@ -53,8 +53,9 @@ const History = () => {
   const [filterAnomaly, setFilterAnomaly] = useState(true);
   const [filterYolo, setFilterYolo] = useState(true);
   const [displayMode, setDisplayMode] = useState<"image" | "overlay">("image");
-  const [dateFrom, setDateFrom] = useState<Date | undefined>(new Date());
-  const [dateTo, setDateTo] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedHour, setSelectedHour] = useState("12");
+  const [selectedMinute, setSelectedMinute] = useState("00");
 
   const filteredResults = useMemo(() => {
     return results.filter((r) => {
