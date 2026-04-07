@@ -30,9 +30,6 @@ const Index = () => {
   const { config, updateConfig, setConfig } = useInspectionConfig();
   const [controlsOpen, setControlsOpen] = useState(true);
   const [cameraSettings, setCameraSettings] = useState<CameraSettings>(DEFAULT_CAMERA_SETTINGS);
-  const [hardwareCapture, setHardwareCapture] = useState(false);
-  const [timedCapture, setTimedCapture] = useState(false);
-  const [timedCaptureFps, setTimedCaptureFps] = useState(1);
 
   useEffect(() => {
     if (!lastMessage) return;
@@ -61,16 +58,9 @@ const Index = () => {
     });
   };
 
-  const disableCaptureModes = () => {
-    setHardwareCapture(false);
-    setTimedCapture(false);
-    sendJson({ type: "config.update", path: "hardwareCapture.enabled", value: false });
-    sendJson({ type: "config.update", path: "timedCapture.enabled", value: false });
-  };
-
   const handleConfigUpdate = (path: string, value: number | boolean) => {
     if (path.endsWith(".enabled") && value === true) {
-      const groups = ["classic", "yolo", "seg"];
+      const groups = ["classic", "yolo", "hardware", "timed"];
       const activeGroup = path.split(".")[0];
 
       groups
@@ -79,37 +69,10 @@ const Index = () => {
           updateConfig(`${g}.enabled`, false);
           sendJson({ type: "config.update", path: `${g}.enabled`, value: false });
         });
-
-      disableCaptureModes();
     }
 
     updateConfig(path, value);
     sendJson({ type: "config.update", path, value });
-  };
-
-  const handleCaptureToggle = (mode: "hardwareCapture" | "timedCapture") => {
-    const enabling = mode === "hardwareCapture" ? !hardwareCapture : !timedCapture;
-
-    if (enabling) {
-      ["classic", "yolo", "seg"].forEach((g) => {
-        updateConfig(`${g}.enabled`, false);
-        sendJson({ type: "config.update", path: `${g}.enabled`, value: false });
-      });
-      if (mode === "hardwareCapture") {
-        setTimedCapture(false);
-        sendJson({ type: "config.update", path: "timedCapture.enabled", value: false });
-        setHardwareCapture(true);
-      } else {
-        setHardwareCapture(false);
-        sendJson({ type: "config.update", path: "hardwareCapture.enabled", value: false });
-        setTimedCapture(true);
-      }
-    } else {
-      if (mode === "hardwareCapture") setHardwareCapture(false);
-      else setTimedCapture(false);
-    }
-
-    sendJson({ type: "config.update", path: `${mode}.enabled`, value: enabling });
   };
 
   const handleCameraUpdate = (path: keyof CameraSettings, value: number | boolean) => {
@@ -157,13 +120,43 @@ const Index = () => {
                 enabled={config.classic.enabled}
                 onToggle={() => handleConfigUpdate("classic.enabled", !config.classic.enabled)}
               >
-                <InspectionSlider label="Low H" value={config.classic.lowH} onChange={(v) => handleConfigUpdate("classic.lowH", v)} />
-                <InspectionSlider label="Low S" value={config.classic.lowS} onChange={(v) => handleConfigUpdate("classic.lowS", v)} />
-                <InspectionSlider label="Low V" value={config.classic.lowV} onChange={(v) => handleConfigUpdate("classic.lowV", v)} />
-                <InspectionSlider label="High H" value={config.classic.highH} onChange={(v) => handleConfigUpdate("classic.highH", v)} />
-                <InspectionSlider label="High S" value={config.classic.highS} onChange={(v) => handleConfigUpdate("classic.highS", v)} />
-                <InspectionSlider label="High V" value={config.classic.highV} onChange={(v) => handleConfigUpdate("classic.highV", v)} />
-                <InspectionSlider label="Size" value={config.classic.size} onChange={(v) => handleConfigUpdate("classic.size", v)} min={50} max={30000} />
+                <InspectionSlider
+                  label="Low H"
+                  value={config.classic.lowH}
+                  onChange={(v) => handleConfigUpdate("classic.lowH", v)}
+                />
+                <InspectionSlider
+                  label="Low S"
+                  value={config.classic.lowS}
+                  onChange={(v) => handleConfigUpdate("classic.lowS", v)}
+                />
+                <InspectionSlider
+                  label="Low V"
+                  value={config.classic.lowV}
+                  onChange={(v) => handleConfigUpdate("classic.lowV", v)}
+                />
+                <InspectionSlider
+                  label="High H"
+                  value={config.classic.highH}
+                  onChange={(v) => handleConfigUpdate("classic.highH", v)}
+                />
+                <InspectionSlider
+                  label="High S"
+                  value={config.classic.highS}
+                  onChange={(v) => handleConfigUpdate("classic.highS", v)}
+                />
+                <InspectionSlider
+                  label="High V"
+                  value={config.classic.highV}
+                  onChange={(v) => handleConfigUpdate("classic.highV", v)}
+                />
+                <InspectionSlider
+                  label="Size"
+                  value={config.classic.size}
+                  onChange={(v) => handleConfigUpdate("classic.size", v)}
+                  min={50}
+                  max={30000}
+                />
 
                 <Collapsible className="border-t border-sidebar-border/50 pt-2 mt-1">
                   <CollapsibleTrigger className="flex items-center gap-1.5 w-full cursor-pointer select-none group">
@@ -179,11 +172,11 @@ const Index = () => {
                       { key: "drawTracking", label: "Draw Tracking" },
                     ].map(({ key, label }) => (
                       <label key={key} className="flex items-center gap-2 cursor-pointer group">
-                      <Checkbox
-                        checked={(config.classic as any)[key]}
-                        onCheckedChange={(v) => handleConfigUpdate(`classic.${key}`, !!v)}
-                        className="h-3.5 w-3.5 border-sidebar-foreground/30 data-[state=checked]:bg-transparent data-[state=checked]:border-sidebar-primary"
-                      />
+                        <Checkbox
+                          checked={(config.classic as any)[key]}
+                          onCheckedChange={(v) => handleConfigUpdate(`classic.${key}`, !!v)}
+                          className="h-3.5 w-3.5 border-sidebar-foreground/30 data-[state=checked]:bg-transparent data-[state=checked]:border-sidebar-primary"
+                        />
                         <span className="text-[10px] font-mono text-sidebar-foreground/90 group-hover:text-sidebar-foreground transition-colors">
                           {label}
                         </span>
@@ -198,40 +191,37 @@ const Index = () => {
                 enabled={config.yolo.enabled}
                 onToggle={() => handleConfigUpdate("yolo.enabled", !config.yolo.enabled)}
               >
-                <p className="text-[10px] font-mono text-sidebar-foreground/80">Running object detection…</p>
-              </ProcessingCard>
-
-              <ProcessingCard
-                title="Segmentation"
-                enabled={config.seg.enabled}
-                onToggle={() => handleConfigUpdate("seg.enabled", !config.seg.enabled)}
-              >
-                <p className="text-[10px] font-mono text-sidebar-foreground/80">Segmentation active…</p>
+                <p className="text-[10px] font-mono text-sidebar-foreground/80">
+                  Running object detection…
+                </p>
               </ProcessingCard>
 
               <ProcessingCard
                 title="Hardware Capture"
-                enabled={hardwareCapture}
-                onToggle={() => handleCaptureToggle("hardwareCapture")}
+                enabled={config.hardware.enabled}
+                onToggle={() => handleConfigUpdate("hardware.enabled", !config.hardware.enabled)}
               >
-                <p className="text-[10px] font-mono text-sidebar-foreground/80">Trigger capture via hardware signal</p>
+                <p className="text-[10px] font-mono text-sidebar-foreground/80">
+                  Trigger capture via hardware signal
+                </p>
               </ProcessingCard>
 
               <ProcessingCard
                 title="Timed Capture"
-                enabled={timedCapture}
-                onToggle={() => handleCaptureToggle("timedCapture")}
+                enabled={config.timed.enabled}
+                onToggle={() => handleConfigUpdate("timed.enabled", !config.timed.enabled)}
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-mono text-sidebar-foreground/80">FPS</span>
-                    <span className="text-[10px] font-mono text-sidebar-foreground">{timedCaptureFps}</span>
+                    <span className="text-[10px] font-mono text-sidebar-foreground">
+                      {config.timed.fps}
+                    </span>
                   </div>
                   <Slider
-                    value={[timedCaptureFps]}
+                    value={[config.timed.fps]}
                     onValueChange={([v]) => {
-                      setTimedCaptureFps(v);
-                      sendJson({ type: "config.update", path: "timedCapture.fps", value: v });
+                      handleConfigUpdate("timed.fps", v);
                     }}
                     min={1}
                     max={10}
@@ -254,15 +244,12 @@ const Index = () => {
             <ImagePanel
               title="Mask"
               imgSrc={mask}
-              showSelection={config.seg.enabled}
+              showSelection={false}
               onSelectionCommit={handleSelectionCommit}
             />
           </div>
 
-          <CameraSettingsPanel
-            settings={cameraSettings}
-            onUpdate={handleCameraUpdate}
-          />
+          <CameraSettingsPanel settings={cameraSettings} onUpdate={handleCameraUpdate} />
         </main>
       </div>
     </div>

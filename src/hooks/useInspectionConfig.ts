@@ -14,10 +14,24 @@ export interface ClassicConfig {
   drawTracking: boolean;
 }
 
+export interface YoloConfig {
+  enabled: boolean;
+}
+
+export interface HardwareConfig {
+  enabled: boolean;
+}
+
+export interface TimedConfig {
+  enabled: boolean;
+  fps: number;
+}
+
 export interface InspectionConfig {
   classic: ClassicConfig;
-  yolo: { enabled: boolean };
-  seg: { enabled: boolean };
+  yolo: YoloConfig;
+  hardware: HardwareConfig;
+  timed: TimedConfig;
 }
 
 const defaultConfig: InspectionConfig = {
@@ -37,8 +51,12 @@ const defaultConfig: InspectionConfig = {
   yolo: {
     enabled: false,
   },
-  seg: {
+  hardware: {
     enabled: false,
+  },
+  timed: {
+    enabled: false,
+    fps: 1,
   },
 };
 
