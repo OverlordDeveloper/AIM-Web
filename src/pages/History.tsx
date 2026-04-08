@@ -74,8 +74,8 @@ const History = () => {
     <div className="w-screen h-screen flex flex-col overflow-hidden">
       <TopNav connected={connected} />
       <div className="flex-1 flex overflow-hidden">
-        {/* Left sidebar — 30% */}
-        <div className="w-[30%] min-w-[280px] flex flex-col border-r border-border bg-card">
+        {/* Left sidebar — 20% */}
+        <div className="w-[20%] min-w-[240px] flex flex-col border-r border-border bg-card">
           {/* Header */}
           <div className="px-4 py-3 border-b border-border space-y-3">
             <h2 className="text-xs font-semibold text-foreground tracking-wider uppercase text-center">
@@ -154,7 +154,7 @@ const History = () => {
           <ScrollArea className="flex-1">
             <div className="py-1">
               {pageResults.length === 0 && (
-                <p className="text-[11px] text-muted-foreground text-center py-8">
+                <p className="text-xs text-muted-foreground text-center py-8">
                   No results found
                 </p>
               )}
@@ -166,7 +166,7 @@ const History = () => {
                     setDisplayMode("image");
                   }}
                   className={cn(
-                    "w-full text-left px-3 py-1.5 flex items-center gap-2 text-[11px] font-mono transition-colors",
+                    "w-full text-left px-3 py-2 flex items-center gap-2 text-xs font-mono transition-colors",
                     selectedId === res.id
                       ? "bg-primary/15 text-primary"
                       : "text-foreground/80 hover:bg-secondary"
