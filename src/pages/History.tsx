@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, ChevronRight, RefreshCw, Filter, ImageIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, RefreshCw, Filter, ImageIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
 
 const WS_URL = "ws://127.0.0.1:18080/api/ws/live";
 
@@ -52,6 +53,7 @@ const History = () => {
   const [filterYolo, setFilterYolo] = useState(true);
   const [displayMode, setDisplayMode] = useState<"image" | "overlay">("image");
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -151,6 +153,28 @@ const History = () => {
                   ))}
                 </SelectContent>
               </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-7 w-7 shrink-0"
+                    title="Select date"
+                  >
+                    <Clock className="w-3 h-3" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    initialFocus
+                    today={undefined}
+                    className={cn("p-2 pointer-events-auto rounded border border-border")}
+                  />
+                </PopoverContent>
+              </Popover>
               <Button
                 variant="outline"
                 size="icon"
