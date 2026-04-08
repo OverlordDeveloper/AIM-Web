@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import TopNav from "@/components/TopNav";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,12 @@ const History = () => {
   const [filterAnomaly, setFilterAnomaly] = useState(true);
   const [filterYolo, setFilterYolo] = useState(true);
   const [displayMode, setDisplayMode] = useState<"image" | "overlay">("image");
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const filteredResults = useMemo(() => {
     return results.filter((r) => {
@@ -78,9 +84,15 @@ const History = () => {
         <div className="w-[20%] min-w-[240px] flex flex-col border-r border-border bg-card">
           {/* Header */}
           <div className="px-4 py-3 border-b border-border space-y-3">
-            <h2 className="text-base font-bold text-foreground tracking-wider uppercase text-center">
-              History
-            </h2>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono text-muted-foreground/70 tabular-nums">
+                {currentTime.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}{" "}
+                {currentTime.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+              </span>
+              <h2 className="text-base font-bold text-foreground tracking-wider uppercase">
+                History
+              </h2>
+            </div>
 
             {/* Filters */}
             <div className="flex items-center gap-2">
