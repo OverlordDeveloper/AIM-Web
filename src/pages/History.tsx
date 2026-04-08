@@ -54,6 +54,8 @@ const History = () => {
   const [displayMode, setDisplayMode] = useState<"image" | "overlay">("image");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedHour, setSelectedHour] = useState(new Date().getHours());
+  const [selectedMinute, setSelectedMinute] = useState(new Date().getMinutes());
 
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
