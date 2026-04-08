@@ -86,7 +86,7 @@ const History = () => {
         <div className="w-[20%] min-w-[240px] flex flex-col border-r border-border bg-card">
           {/* Header */}
           <div className="px-4 py-3 border-b border-border space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between relative">
               <span className="text-xs font-mono text-muted-foreground/70 tabular-nums">
                 {currentTime.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}{" "}
                 {currentTime.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
