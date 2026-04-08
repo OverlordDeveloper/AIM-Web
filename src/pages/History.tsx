@@ -91,9 +91,10 @@ const History = () => {
                 {currentTime.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}{" "}
                 {currentTime.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
               </span>
-              <h2 className="text-base font-bold text-foreground tracking-wider uppercase">
+              <h2 className="text-base font-bold text-foreground tracking-wider uppercase absolute left-1/2 -translate-x-1/2">
                 History
               </h2>
+              <div className="w-0" />
             </div>
 
             {/* Filters */}
