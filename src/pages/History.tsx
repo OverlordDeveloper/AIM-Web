@@ -167,15 +167,43 @@ const History = () => {
                     <Clock className="w-3 h-3" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-2" align="start">
                   <Calendar
                     mode="single"
                     selected={selectedDate}
                     onSelect={setSelectedDate}
                     initialFocus
                     today={undefined}
-                    className={cn("p-2 pointer-events-auto rounded border border-border")}
+                    className={cn("p-2 pointer-events-auto")}
                   />
+                  <div className="flex items-center gap-2 px-2 pb-2 pt-1 border-t border-border mt-1">
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                    <Select value={String(selectedHour)} onValueChange={(v) => setSelectedHour(Number(v))}>
+                      <SelectTrigger className="h-8 w-[70px] text-sm font-mono font-semibold">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <SelectItem key={i} value={String(i)} className="text-sm font-mono">
+                            {String(i).padStart(2, "0")}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <span className="text-sm font-bold text-muted-foreground">:</span>
+                    <Select value={String(selectedMinute)} onValueChange={(v) => setSelectedMinute(Number(v))}>
+                      <SelectTrigger className="h-8 w-[70px] text-sm font-mono font-semibold">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 60 }, (_, i) => (
+                          <SelectItem key={i} value={String(i)} className="text-sm font-mono">
+                            {String(i).padStart(2, "0")}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </PopoverContent>
               </Popover>
               <Button
