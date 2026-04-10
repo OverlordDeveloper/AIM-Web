@@ -1,30 +1,35 @@
 
 
-## Move Camera Settings into the Controls Sidebar
+## Analytics Page
 
-### What changes
-The camera settings currently live in a horizontal bottom panel (`CameraSettingsPanel`). We will move them into the left Controls sidebar as a new `ProcessingCard`-style card called "Camera", placed at the bottom of the card list. The bottom panel will be removed entirely.
+### Overview
+Add a new "Analytics" page accessible from the top navigation bar. The page will fetch historical inspection data from the existing backend API and display various charts showing defect/detection trends over time.
 
-### Plan
+### What gets built
 
-1. **Add a Camera card to the Controls sidebar** (`src/pages/Index.tsx`)
-   - Add a new `ProcessingCard` (always visible, no enable/disable toggle -- or use a `Collapsible` section like the existing Settings subsection) at the bottom of the sidebar's card list
-   - Include all camera controls stacked vertically (they fit better in a narrow sidebar than the current horizontal layout):
-     - Resolution preset dropdown + custom W/H inputs
-     - Auto Exposure and Auto WB checkboxes
-     - Exposure, Analogue Gain, Brightness, Contrast sliders (using `InspectionSlider`)
+1. **New route and nav link** -- Add `/analytics` route in `App.tsx` and a "Analytics" link (with `BarChart3` icon) in `TopNav.tsx`.
 
-2. **Remove the bottom CameraSettingsPanel** (`src/pages/Index.tsx`)
-   - Remove the `<CameraSettingsPanel>` component from the `<main>` area
-   - Remove the import of `CameraSettingsDialog`
+2. **Analytics page (`src/pages/Analytics.tsx`)** -- Full-page layout with:
+   - Top nav (reusing existing `TopNav` component)
+   - Time range selector (Last 7 days, Last 30 days, Custom range)
+   - Dashboard grid of chart cards
 
-3. **Keep `CameraSettingsDialog.tsx`** for now (or delete it) -- the logic will be inlined into `Index.tsx` using existing components (`Select`, `InspectionSlider`, `Checkbox`) that are already used in the sidebar.
+3. **Chart cards** (using existing Recharts + `ChartContainer` from `src/components/ui/chart.tsx`):
+   - **Detections Over Time** -- Bar chart showing total inspections per day/week
+   - **Defect Rate Trend** -- Line chart showing anomaly reject % and YOLO reject % over time
+   - **Defects by Type** -- Pie/donut chart comparing anomaly vs YOLO rejects
+   - **Hourly Distribution** -- Bar chart showing which hours have the most defects
+   - **Summary Stats** -- Cards showing total inspections, total defects, defect rate %, pass rate %
 
-### Technical details
-- The camera card will use a `Collapsible` wrapper so users can expand/collapse camera settings independently
-- Resolution dropdown uses `Select` component already imported
-- Custom resolution inputs use `Input` component already imported
-- All sliders reuse `InspectionSlider` with the same min/max/step values from the current bottom panel
-- The `handleCameraUpdate` function and `cameraSettings` state remain unchanged
-- The card will not participate in the mutual exclusion logic (camera settings are always available regardless of active mode)
+4. **Data fetching** -- Use the existing `API_BASE` (`http://192.168.1.156:18080`) to fetch history records, then aggregate client-side into daily/weekly buckets for charting. Will use `@tanstack/react-query` for data fetching.
+
+### Files to create/modify
+- `src/pages/Analytics.tsx` -- New page component
+- `src/components/TopNav.tsx` -- Add analytics nav link
+- `src/App.tsx` -- Add `/analytics` route
+
+### Technical notes
+- Reuses the same `HistoryRecord` interface and API endpoint from the History page
+- All chart components use the existing Recharts setup and `ChartContainer`/`ChartTooltip` from `src/components/ui/chart.tsx`
+- Consistent dark theme styling matching existing pages
 
