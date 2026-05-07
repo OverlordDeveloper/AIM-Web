@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -37,6 +37,21 @@ const DefectHistory = ({
 }: DefectHistoryProps) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [quickRange, setQuickRange] = useState<QuickRange>("all");
+  const [selectedClassIds, setSelectedClassIds] = useState<Set<string>>(new Set());
+
+  // Reset class filter when model (classMap) changes
+  useEffect(() => {
+    setSelectedClassIds(new Set());
+  }, [classMap]);
+
+  const toggleClass = (id: string) => {
+    setSelectedClassIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const filtered = useMemo(() => {
     const now = Date.now();
@@ -51,26 +66,34 @@ const DefectHistory = ({
         )
           return false;
       }
-      switch (quickRange) {
-        case "5m":
-          return now - t <= 5 * 60 * 1000;
-        case "1h":
-          return now - t <= 60 * 60 * 1000;
-        case "today": {
-          const d = new Date(f.timestamp);
-          const today = new Date();
-          return (
-            d.getFullYear() === today.getFullYear() &&
-            d.getMonth() === today.getMonth() &&
-            d.getDate() === today.getDate()
-          );
+      const inRange = (() => {
+        switch (quickRange) {
+          case "5m":
+            return now - t <= 5 * 60 * 1000;
+          case "1h":
+            return now - t <= 60 * 60 * 1000;
+          case "today": {
+            const d = new Date(f.timestamp);
+            const today = new Date();
+            return (
+              d.getFullYear() === today.getFullYear() &&
+              d.getMonth() === today.getMonth() &&
+              d.getDate() === today.getDate()
+            );
+          }
+          case "all":
+          default:
+            return true;
         }
-        case "all":
-        default:
-          return true;
+      })();
+      if (!inRange) return false;
+      if (selectedClassIds.size > 0) {
+        const hit = f.boxes.some((b) => selectedClassIds.has(b.classId));
+        if (!hit) return false;
       }
+      return true;
     });
-  }, [frames, date, quickRange]);
+  }, [frames, date, quickRange, selectedClassIds]);
 
   const ranges: { id: QuickRange; label: string }[] = [
     { id: "5m", label: "Last 5 min" },
@@ -139,6 +162,45 @@ const DefectHistory = ({
                 {r.label}
               </Button>
             ))}
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+                Categories
+              </span>
+              {selectedClassIds.size > 0 && (
+                <button
+                  onClick={() => setSelectedClassIds(new Set())}
+                  className="text-[10px] font-mono text-muted-foreground hover:text-foreground"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {Object.values(classMap).map((cls) => {
+                const active = selectedClassIds.has(cls.id);
+                return (
+                  <button
+                    key={cls.id}
+                    onClick={() => toggleClass(cls.id)}
+                    className={cn(
+                      "flex items-center gap-1 px-1.5 py-0.5 rounded-sm border text-[10px] font-mono transition-colors",
+                      active
+                        ? "bg-muted border-primary ring-1 ring-primary text-foreground"
+                        : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
+                    )}
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{ background: `hsl(${cls.color})` }}
+                    />
+                    {cls.name}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
