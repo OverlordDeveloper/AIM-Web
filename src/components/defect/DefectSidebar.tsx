@@ -274,7 +274,7 @@ const DefectSidebar = ({
                       className={cn(
                         "px-1.5 py-0.5 rounded-sm border text-[10px] font-mono tabular-nums leading-none",
                         enabled
-                          ? "bg-background border-border text-primary"
+                          ? "bg-background border-border text-foreground"
                           : "bg-background/40 border-border text-muted-foreground"
                       )}
                     >
@@ -286,10 +286,9 @@ const DefectSidebar = ({
                       className={cn(
                         "flex items-center justify-center w-6 h-6 rounded-sm border transition-colors",
                         enabled
-                          ? "border-border bg-background/60"
-                          : "border-border/50 bg-transparent hover:border-foreground/40"
+                          ? "border-border bg-background/60 text-success"
+                          : "border-border/50 bg-transparent text-muted-foreground hover:border-foreground/40"
                       )}
-                      style={enabled ? { color: `hsl(${cls.color})` } : undefined}
                       aria-label={enabled ? "Disable class" : "Enable class"}
                     >
                       <Power className="w-3 h-3" />
