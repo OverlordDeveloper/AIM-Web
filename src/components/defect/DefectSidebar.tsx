@@ -126,16 +126,15 @@ const ChannelSlider = ({ value, color, disabled, onChange }: ChannelSliderProps)
         <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-sm bg-background border border-border">
           <SliderPrimitive.Range
             className="absolute h-full"
-            style={{ background: disabled ? "hsl(var(--muted-foreground) / 0.3)" : `hsl(${color})` }}
+            style={{ background: disabled ? "hsl(var(--muted-foreground) / 0.3)" : "hsl(var(--foreground) / 0.7)" }}
           />
         </SliderPrimitive.Track>
         <SliderPrimitive.Thumb
           className={cn(
-            "block h-4 w-2 rounded-[2px] border bg-foreground shadow-md transition-colors",
+            "block h-4 w-2 rounded-[2px] border border-border bg-foreground shadow-md transition-colors",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             "disabled:pointer-events-none disabled:opacity-50"
           )}
-          style={{ borderColor: disabled ? "hsl(var(--border))" : `hsl(${color})` }}
         />
       </SliderPrimitive.Root>
     </div>
