@@ -41,7 +41,7 @@ interface ActionTileProps {
   label: string;
   activeStatus: string;
   inactiveStatus: string;
-  tone: "primary" | "destructive";
+  tone: "success" | "destructive";
 }
 
 const ActionTile = ({
@@ -53,10 +53,10 @@ const ActionTile = ({
   inactiveStatus,
   tone,
 }: ActionTileProps) => {
-  const toneCls = tone === "primary"
+  const toneCls = tone === "success"
     ? {
-        on: "bg-primary/15 border-primary text-primary",
-        dot: "bg-primary text-primary",
+        on: "bg-success/15 border-success text-success",
+        dot: "bg-success text-success",
       }
     : {
         on: "bg-destructive/15 border-destructive text-destructive ring-1 ring-inset ring-destructive/30",
@@ -126,16 +126,15 @@ const ChannelSlider = ({ value, color, disabled, onChange }: ChannelSliderProps)
         <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-sm bg-background border border-border">
           <SliderPrimitive.Range
             className="absolute h-full"
-            style={{ background: disabled ? "hsl(var(--muted-foreground) / 0.3)" : `hsl(${color})` }}
+            style={{ background: disabled ? "hsl(var(--muted-foreground) / 0.3)" : "hsl(var(--foreground) / 0.7)" }}
           />
         </SliderPrimitive.Track>
         <SliderPrimitive.Thumb
           className={cn(
-            "block h-4 w-2 rounded-[2px] border bg-foreground shadow-md transition-colors",
+            "block h-4 w-2 rounded-[2px] border border-border bg-foreground shadow-md transition-colors",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             "disabled:pointer-events-none disabled:opacity-50"
           )}
-          style={{ borderColor: disabled ? "hsl(var(--border))" : `hsl(${color})` }}
         />
       </SliderPrimitive.Root>
     </div>
@@ -183,7 +182,7 @@ const DefectSidebar = ({
             label="Detection"
             activeStatus="● Active"
             inactiveStatus="○ Standby"
-            tone="primary"
+            tone="success"
           />
           <ActionTile
             active={rejectEnabled}
@@ -231,15 +230,25 @@ const DefectSidebar = ({
             {enabledCount} / {totalClasses} <span className="text-muted-foreground">ON</span>
           </span>
         </div>
-        <Button
-          size="sm"
-          variant={autoScroll ? "default" : "ghost"}
-          className="h-6 text-[9px] px-1.5 gap-1 font-mono uppercase tracking-wider"
+        <button
+          type="button"
           onClick={onAutoScrollToggle}
+          className={cn(
+            "h-6 px-1.5 inline-flex items-center gap-1 rounded-sm border text-[9px] font-mono uppercase tracking-wider transition-colors",
+            autoScroll
+              ? "bg-secondary border-border text-foreground"
+              : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+          )}
         >
+          <span
+            className={cn(
+              "w-1.5 h-1.5 rounded-full",
+              autoScroll ? "bg-success led-pulse" : "bg-muted-foreground/40"
+            )}
+          />
           <MoveDown className="w-3 h-3" />
           Auto
-        </Button>
+        </button>
       </div>
 
       <Separator />
@@ -275,7 +284,7 @@ const DefectSidebar = ({
                       className={cn(
                         "px-1.5 py-0.5 rounded-sm border text-[10px] font-mono tabular-nums leading-none",
                         enabled
-                          ? "bg-background border-border text-primary"
+                          ? "bg-background border-border text-foreground"
                           : "bg-background/40 border-border text-muted-foreground"
                       )}
                     >
@@ -287,10 +296,9 @@ const DefectSidebar = ({
                       className={cn(
                         "flex items-center justify-center w-6 h-6 rounded-sm border transition-colors",
                         enabled
-                          ? "border-border bg-background/60"
-                          : "border-border/50 bg-transparent hover:border-foreground/40"
+                          ? "border-border bg-background/60 text-success"
+                          : "border-border/50 bg-transparent text-muted-foreground hover:border-foreground/40"
                       )}
-                      style={enabled ? { color: `hsl(${cls.color})` } : undefined}
                       aria-label={enabled ? "Disable class" : "Enable class"}
                     >
                       <Power className="w-3 h-3" />
