@@ -212,6 +212,41 @@ const DefectHistory = ({
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+                Min confidence
+              </span>
+              <span className="text-[10px] font-mono text-foreground tabular-nums">
+                {Math.round(minConfidence * 100)}%
+              </span>
+            </div>
+            <Slider
+              value={[Math.round(minConfidence * 100)]}
+              onValueChange={(v) => setMinConfidence((v[0] ?? 0) / 100)}
+              min={0}
+              max={100}
+              step={5}
+              className="py-1"
+            />
+            <div className="grid grid-cols-4 gap-1">
+              {[0, 50, 75, 90].map((p) => {
+                const active = Math.round(minConfidence * 100) === p;
+                return (
+                  <Button
+                    key={p}
+                    size="sm"
+                    variant={active ? "default" : "secondary"}
+                    className="h-6 text-[10px] px-1"
+                    onClick={() => setMinConfidence(p / 100)}
+                  >
+                    {p}%
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
             <span>Results</span>
             <Badge variant="secondary" className="text-[10px] font-mono">
