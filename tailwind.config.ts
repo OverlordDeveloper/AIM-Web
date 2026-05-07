@@ -67,6 +67,7 @@ export default {
           offline: "hsl(var(--status-offline))",
         },
         warning: "hsl(var(--warning))",
+        success: "hsl(var(--success))",
       },
       borderRadius: {
         lg: "var(--radius)",
