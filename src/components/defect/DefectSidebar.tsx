@@ -230,15 +230,25 @@ const DefectSidebar = ({
             {enabledCount} / {totalClasses} <span className="text-muted-foreground">ON</span>
           </span>
         </div>
-        <Button
-          size="sm"
-          variant={autoScroll ? "default" : "ghost"}
-          className="h-6 text-[9px] px-1.5 gap-1 font-mono uppercase tracking-wider"
+        <button
+          type="button"
           onClick={onAutoScrollToggle}
+          className={cn(
+            "h-6 px-1.5 inline-flex items-center gap-1 rounded-sm border text-[9px] font-mono uppercase tracking-wider transition-colors",
+            autoScroll
+              ? "bg-secondary border-border text-foreground"
+              : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+          )}
         >
+          <span
+            className={cn(
+              "w-1.5 h-1.5 rounded-full",
+              autoScroll ? "bg-success led-pulse" : "bg-muted-foreground/40"
+            )}
+          />
           <MoveDown className="w-3 h-3" />
           Auto
-        </Button>
+        </button>
       </div>
 
       <Separator />
