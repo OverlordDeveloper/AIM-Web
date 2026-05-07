@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useRef } from "react";
 import {
   ChartContainer,
   ChartTooltip,
@@ -20,7 +20,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const Y_MAX_CAP = 15;
+const Y_MAX_CAP = 10;
 
 interface AnomalyChartPoint {
   index: number;
@@ -37,16 +37,31 @@ interface AnomalyChartProps {
 }
 
 const chartConfig: ChartConfig = {
-  normal: { label: "Normal", color: "hsl(200, 70%, 50%)" },
-  anomaly: { label: "Anomaly", color: "hsl(0, 72%, 51%)" },
+  normal: { label: "Normal", color: "hsl(var(--primary))" },
+  anomaly: { label: "Anomaly", color: "hsl(var(--destructive))" },
 };
 
 const DEFAULT_Y_DOMAIN: [number, number] = [0, Y_MAX_CAP];
 const MIN_Y_SPAN = 1;
 const X_SPOTS = 30;
 
+// pixel distance allowed to "grab" the threshold line
+const THRESHOLD_HIT_PX = 10;
+
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
+
+const roundToStep = (value: number, step: number) =>
+  Math.round(value / step) * step;
+
+// step scales with zoom span
+const getThresholdStep = (span: number) => {
+  if (span <= 1) return 0.01;
+  if (span <= 2) return 0.02;
+  if (span <= 4) return 0.05;
+  if (span <= 8) return 0.1;
+  return 0.25;
+};
 
 const AnomalyChart = ({
   data,
@@ -56,6 +71,12 @@ const AnomalyChart = ({
   selectedRecordId,
 }: AnomalyChartProps) => {
   const [yDomain, setYDomain] = useState<[number, number]>(DEFAULT_Y_DOMAIN);
+
+  const chartAreaRef = useRef<HTMLDivElement | null>(null);
+  const dragStartYRef = useRef<number | null>(null);
+  const dragStartDomainRef = useRef<[number, number] | null>(null);
+  const isDraggingChartRef = useRef(false);
+  const isDraggingThresholdRef = useRef(false);
 
   const visibleData = useMemo(() => {
     const last30 = data.slice(-X_SPOTS);
@@ -72,84 +93,152 @@ const AnomalyChart = ({
   );
 
   const handleResetYZoom = useCallback(() => {
-    if (visibleData.length === 0) {
-      setYDomain(DEFAULT_Y_DOMAIN);
-      return;
-    }
-
-    const values = visibleData.map((p) => p.value);
-    const dataMin = Math.min(...values, threshold);
-    const dataMax = Math.max(...values, threshold);
-    const dataSpan = Math.max(dataMax - dataMin, MIN_Y_SPAN);
-    const padding = Math.max(dataSpan * 0.15, 1);
-
-    let nextMin = Math.max(0, dataMin - padding);
-    let nextMax = Math.min(dataMax + padding, Y_MAX_CAP);
-
-    if (nextMax - nextMin < MIN_Y_SPAN) {
-      nextMin = Math.max(0, nextMax - MIN_Y_SPAN);
-      nextMax = Math.min(Y_MAX_CAP, nextMin + MIN_Y_SPAN);
-    }
-
-    setYDomain([nextMin, nextMax]);
-  }, [visibleData, threshold]);
+    setYDomain(DEFAULT_Y_DOMAIN);
+  }, []);
 
   const handleWheelZoom = useCallback(
     (e: React.WheelEvent<HTMLDivElement>) => {
       e.preventDefault();
-
-      if (visibleData.length === 0) return;
-
-      const values = visibleData.map((p) => p.value);
-      const dataMin = Math.min(...values, threshold);
-      const dataMax = Math.max(...values, threshold);
-
-      const dataSpanRaw = dataMax - dataMin;
-      const dataSpan = Math.max(dataSpanRaw, MIN_Y_SPAN);
-      const padding = Math.max(dataSpan * 0.15, 1);
-
-      const targetMin = Math.max(0, dataMin - padding);
-      const targetMax = Math.min(dataMax + padding, Y_MAX_CAP);
-      const targetCenter = (targetMin + targetMax) / 2;
-      const targetSpan = Math.max(targetMax - targetMin, MIN_Y_SPAN);
 
       setYDomain((prev) => {
         const prevSpan = prev[1] - prev[0];
         const zoomFactor = e.deltaY > 0 ? 1.6 : 0.5;
         const nextSpan = clamp(prevSpan * zoomFactor, MIN_Y_SPAN, Y_MAX_CAP);
 
-        let nextMin = targetCenter - nextSpan / 2;
-        let nextMax = targetCenter + nextSpan / 2;
-
-        if (nextSpan < targetSpan) {
-          nextMin = targetMin;
-          nextMax = targetMax;
-        }
-
-        if (nextMin < 0) {
-          nextMax -= nextMin;
-          nextMin = 0;
-        }
+        let nextMin = prev[0];
+        let nextMax = nextMin + nextSpan;
 
         if (nextMax > Y_MAX_CAP) {
-          nextMin -= nextMax - Y_MAX_CAP;
+          nextMin = Y_MAX_CAP - nextSpan;
           nextMax = Y_MAX_CAP;
         }
 
-        nextMin = Math.max(0, nextMin);
-        nextMax = Math.min(Y_MAX_CAP, nextMax);
-
-        if (nextMax - nextMin < MIN_Y_SPAN) {
-          nextMin = Math.max(0, nextMax - MIN_Y_SPAN);
-          nextMax = Math.min(Y_MAX_CAP, nextMin + MIN_Y_SPAN);
+        if (nextMin < 0) {
+          nextMin = 0;
+          nextMax = nextSpan;
         }
 
         return [nextMin, nextMax];
       });
     },
-    [visibleData, threshold]
+    []
   );
 
+  const yToPixel = useCallback(
+    (value: number, rect: DOMRect) => {
+      const [minY, maxY] = yDomain;
+      const ratio = (value - minY) / (maxY - minY);
+      return rect.bottom - ratio * rect.height;
+    },
+    [yDomain]
+  );
+
+  const pixelToY = useCallback(
+    (clientY: number, rect: DOMRect) => {
+      const [minY, maxY] = yDomain;
+      const ratio = clamp((rect.bottom - clientY) / rect.height, 0, 1);
+      return minY + ratio * (maxY - minY);
+    },
+    [yDomain]
+  );
+
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!enabled || !chartAreaRef.current) return;
+
+      const rect = chartAreaRef.current.getBoundingClientRect();
+      const thresholdPixelY = yToPixel(threshold, rect);
+      const isNearThreshold =
+        Math.abs(e.clientY - thresholdPixelY) <= THRESHOLD_HIT_PX;
+
+      if (isNearThreshold) {
+        isDraggingThresholdRef.current = true;
+        return;
+      }
+
+      dragStartYRef.current = e.clientY;
+      dragStartDomainRef.current = yDomain;
+      isDraggingChartRef.current = true;
+    },
+    [enabled, threshold, yDomain, yToPixel]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!chartAreaRef.current) return;
+
+      const rect = chartAreaRef.current.getBoundingClientRect();
+
+      if (isDraggingThresholdRef.current) {
+        const rawValue = pixelToY(e.clientY, rect);
+        const step = getThresholdStep(yDomain[1] - yDomain[0]);
+        const snappedValue = roundToStep(rawValue, step);
+        const nextThreshold = clamp(snappedValue, 0, Y_MAX_CAP);
+        onThresholdChange(Number(nextThreshold.toFixed(4)));
+        return;
+      }
+
+      if (
+        !isDraggingChartRef.current ||
+        dragStartYRef.current === null ||
+        dragStartDomainRef.current === null
+      ) {
+        return;
+      }
+
+      if (rect.height <= 0) return;
+
+      const pixelDelta = e.clientY - dragStartYRef.current;
+      const startDomain = dragStartDomainRef.current;
+      const span = startDomain[1] - startDomain[0];
+
+      const valueDelta = (pixelDelta / rect.height) * span;
+      let nextMin = startDomain[0] + valueDelta;
+      let nextMax = startDomain[1] + valueDelta;
+
+      if (nextMin < 0) {
+        nextMax -= nextMin;
+        nextMin = 0;
+      }
+
+      if (nextMax > Y_MAX_CAP) {
+        nextMin -= nextMax - Y_MAX_CAP;
+        nextMax = Y_MAX_CAP;
+      }
+
+      nextMin = Math.max(0, nextMin);
+      nextMax = Math.min(Y_MAX_CAP, nextMax);
+
+      setYDomain([nextMin, nextMax]);
+    },
+    [onThresholdChange, pixelToY, yDomain]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    isDraggingChartRef.current = false;
+    isDraggingThresholdRef.current = false;
+    dragStartYRef.current = null;
+    dragStartDomainRef.current = null;
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    isDraggingChartRef.current = false;
+    isDraggingThresholdRef.current = false;
+    dragStartYRef.current = null;
+    dragStartDomainRef.current = null;
+  }, []);
+
+  const currentThresholdStep = getThresholdStep(yDomain[1] - yDomain[0]);
+  
+  const normalPoints = useMemo(
+  () => visibleData.filter((entry) => entry.value <= threshold),
+  [visibleData, threshold]
+  );
+
+  const rejectedPoints = useMemo(
+    () => visibleData.filter((entry) => entry.value > threshold),
+    [visibleData, threshold]
+  );
   return (
     <div
       className={cn(
@@ -164,7 +253,7 @@ const AnomalyChart = ({
 
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-[10px] font-mono text-muted-foreground shrink-0">
-            Threshold: {threshold.toFixed(1)}
+            Threshold: {threshold.toFixed(2)}
           </span>
 
           <Slider
@@ -172,7 +261,7 @@ const AnomalyChart = ({
             onValueChange={([v]) => onThresholdChange(v)}
             min={0}
             max={Y_MAX_CAP}
-            step={0.01}
+            step={currentThresholdStep}
             className="w-32"
           />
 
@@ -192,8 +281,16 @@ const AnomalyChart = ({
       </div>
 
       <div
-        className="flex-1 min-h-0 rounded border border-border bg-card/30"
+        ref={chartAreaRef}
+        className={cn(
+          "relative flex-1 min-h-0 rounded border border-border bg-card/30 select-none",
+          enabled && "cursor-grab active:cursor-grabbing"
+        )}
         onWheel={handleWheelZoom}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
       >
         <ChartContainer config={chartConfig} className="w-full h-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -224,21 +321,21 @@ const AnomalyChart = ({
                 tick={{ fontSize: 10 }}
                 stroke="hsl(220, 8%, 45%)"
                 allowDataOverflow
-                tickFormatter={(v: number) => v.toFixed(1)}
+                tickFormatter={(v: number) => v.toFixed(2)}
               />
 
               <ChartTooltip
-              isAnimationActive={false}
-              content={
-                <ChartTooltipContent
-                  formatter={(value: number) => value.toFixed(1)}
-                />
-              }
-            />
+                isAnimationActive={false}
+                content={
+                  <ChartTooltipContent
+                    formatter={(value: number) => value.toFixed(2)}
+                  />
+                }
+              />
 
               <ReferenceLine
                 y={threshold}
-                stroke="hsl(0, 72%, 51%)"
+                stroke="hsl(var(--destructive))"
                 strokeDasharray="6 3"
                 strokeWidth={2}
                 ifOverflow="extendDomain"
@@ -246,39 +343,43 @@ const AnomalyChart = ({
                   value: "Threshold",
                   position: "right",
                   fontSize: 10,
-                  fill: "hsl(0, 72%, 51%)",
+                  fill: "hsl(var(--destructive))",
                 }}
               />
 
               <Line
                 type="linear"
                 dataKey="value"
-                stroke="hsl(200, 70%, 50%, 0.7)"
+                stroke="hsl(var(--primary) / 0.55)"
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}
               />
 
-            <Scatter
-              name="Values"
-              data={visibleData}
-              isAnimationActive={false}
-              animationDuration={0}
-            >
-              {visibleData.map((entry) => (
-                <Cell
-                  key={entry.slot}
-                  fill={
-                    entry.value > threshold
-                      ? "hsl(0, 72%, 51%)"
-                      : "hsl(200, 70%, 50%)"
-                  }
-                />
-              ))}
-            </Scatter>
+              <Scatter
+                name="Values"
+                data={normalPoints}
+                isAnimationActive={false}
+                animationDuration={0}
+                fill="hsl(var(--primary))"
+                shape="circle"
+              />
+
+              <Scatter
+                name="Rejected"
+                data={rejectedPoints}
+                isAnimationActive={false}
+                animationDuration={0}
+                fill="hsl(var(--destructive))"
+                shape="circle"
+              />
             </ComposedChart>
           </ResponsiveContainer>
         </ChartContainer>
+
+        <div className="pointer-events-none absolute right-2 top-2 rounded bg-background/70 px-2 py-1 text-[10px] font-mono text-muted-foreground">
+          threshold step: {currentThresholdStep}
+        </div>
       </div>
     </div>
   );

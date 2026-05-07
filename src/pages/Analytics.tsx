@@ -27,73 +27,75 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  ResponsiveContainer,
 } from "recharts";
-import {
-  TrendingUp,
-  TrendingDown,
-  ShieldAlert,
-  Eye,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { TrendingUp, Eye, CheckCircle, XCircle } from "lucide-react";
 
-const WS_URL = "ws://192.168.1.156:18080/api/ws/history";
-const API_BASE = "http://192.168.1.156:18080";
+const WS_URL = "ws://192.168.1.156:18080/api/ws/analytics";
 
-interface HistoryRecord {
-  id: number;
-  timestamp: string;
-  path: string;
-  anomalyReject: boolean;
-  yoloReject: boolean;
-  imageUrl?: string;
-  overlayUrl?: string;
+interface AnalyticsStats {
+  total: number;
+  anomalyRejects: number;
+  yoloRejects: number;
+  totalDefects: number;
+  passRate: number;
+  defectRate: number;
 }
 
-const parseTimestamp = (value?: string | null) => {
-  if (!value) return null;
-  const direct = new Date(value);
-  if (!Number.isNaN(direct.getTime())) return direct;
-  const m = value.match(
-    /^(\d{2})\/(\d{2})\/(\d{4})[ ,T]+(\d{2}):(\d{2})(?::(\d{2}))?$/
-  );
-  if (m) {
-    const [, dd, mm, yyyy, hh, min, ss] = m;
-    return new Date(
-      Number(yyyy),
-      Number(mm) - 1,
-      Number(dd),
-      Number(hh),
-      Number(min),
-      Number(ss ?? "0")
-    );
-  }
-  return null;
-};
+interface DailyDataItem {
+  date: string;
+  total: number;
+  anomaly: number;
+  yolo: number;
+}
 
-const formatDateTimeForBackend = (date: Date) => {
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  const hh = String(date.getHours()).padStart(2, "0");
-  const min = String(date.getMinutes()).padStart(2, "0");
-  const ss = String(date.getSeconds()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+interface DailyRateDataItem {
+  date: string;
+  anomalyRate: number;
+  yoloRate: number;
+}
+
+interface HourlyDataItem {
+  hour: string;
+  defects: number;
+}
+
+interface PieDataItem {
+  name: string;
+  value: number;
+  fill?: string;
+}
+
+interface AnalyticsSummaryMessage {
+  type: "analytics.summary";
+  range: string;
+  stats: AnalyticsStats;
+  dailyData: DailyDataItem[];
+  dailyRateData: DailyRateDataItem[];
+  hourlyData: HourlyDataItem[];
+  pieData: PieDataItem[];
+}
+
+const emptyStats: AnalyticsStats = {
+  total: 0,
+  anomalyRejects: 0,
+  yoloRejects: 0,
+  totalDefects: 0,
+  passRate: 0,
+  defectRate: 0,
 };
 
 const RANGE_OPTIONS = [
-  { label: "Last 24 hours", value: "24h", hours: 24 },
-  { label: "Last 7 days", value: "7d", hours: 7 * 24 },
-  { label: "Last 30 days", value: "30d", hours: 30 * 24 },
+  { label: "Last 24 hours", value: "24h" },
+  { label: "Last 7 days", value: "7d" },
+  { label: "Last 30 days", value: "30d" },
 ];
 
-const PIE_COLORS = [
-  "hsl(0, 72%, 51%)",
-  "hsl(45, 100%, 55%)",
-  "hsl(142, 71%, 45%)",
-  "hsl(200, 80%, 55%)",
-];
+const PIE_COLORS: Record<string, string> = {
+  "Anomaly Only": "hsl(0, 72%, 51%)",
+  "YOLO Only": "hsl(45, 100%, 55%)",
+  Both: "hsl(200, 80%, 55%)",
+  Passed: "hsl(142, 71%, 45%)",
+};
 
 const barChartConfig: ChartConfig = {
   total: { label: "Total", color: "hsl(var(--primary))" },
@@ -113,129 +115,115 @@ const hourlyChartConfig: ChartConfig = {
 const pieChartConfig: ChartConfig = {
   anomalyOnly: { label: "Anomaly Only", color: "hsl(0, 72%, 51%)" },
   yoloOnly: { label: "YOLO Only", color: "hsl(45, 100%, 55%)" },
-  both: { label: "Both", color: "hsl(280, 70%, 55%)" },
+  both: { label: "Both", color: "hsl(200, 80%, 55%)" },
   passed: { label: "Passed", color: "hsl(142, 71%, 45%)" },
+};
+
+const formatDateTimeForBackend = (date: Date) => {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const hh = String(date.getHours()).padStart(2, "0");
+  const min = String(date.getMinutes()).padStart(2, "0");
+  const ss = String(date.getSeconds()).padStart(2, "0");
+
+  return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+};
+
+const asNumber = (value: unknown) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const normalizeSummary = (msg: any): AnalyticsSummaryMessage => {
+  const stats = msg?.stats ?? {};
+
+  return {
+    type: "analytics.summary",
+    range: String(msg?.range ?? "7d"),
+    stats: {
+      total: asNumber(stats.total),
+      anomalyRejects: asNumber(stats.anomalyRejects),
+      yoloRejects: asNumber(stats.yoloRejects),
+      totalDefects: asNumber(stats.totalDefects),
+      passRate: asNumber(stats.passRate),
+      defectRate: asNumber(stats.defectRate),
+    },
+    dailyData: Array.isArray(msg?.dailyData)
+      ? msg.dailyData.map((d: any) => ({
+          date: String(d.date ?? ""),
+          total: asNumber(d.total),
+          anomaly: asNumber(d.anomaly),
+          yolo: asNumber(d.yolo),
+        }))
+      : [],
+    dailyRateData: Array.isArray(msg?.dailyRateData)
+      ? msg.dailyRateData.map((d: any) => ({
+          date: String(d.date ?? ""),
+          anomalyRate: asNumber(d.anomalyRate),
+          yoloRate: asNumber(d.yoloRate),
+        }))
+      : [],
+    hourlyData: Array.isArray(msg?.hourlyData)
+      ? msg.hourlyData.map((d: any) => ({
+          hour: String(d.hour ?? ""),
+          defects: asNumber(d.defects),
+        }))
+      : [],
+    pieData: Array.isArray(msg?.pieData)
+      ? msg.pieData.map((d: any) => ({
+          name: String(d.name ?? ""),
+          value: asNumber(d.value),
+          fill: PIE_COLORS[String(d.name ?? "")],
+        }))
+      : [],
+  };
+};
+
+const formatDateLabel = (val: string) => {
+  const parts = val.split("-");
+  return parts.length === 3 ? `${parts[2]}/${parts[1]}` : val;
 };
 
 const Analytics = () => {
   const { connected, lastMessage, sendJson } = useWebSocket(WS_URL);
-  const [records, setRecords] = useState<HistoryRecord[]>([]);
+
   const [range, setRange] = useState("7d");
+  const [summary, setSummary] = useState<AnalyticsSummaryMessage>({
+    type: "analytics.summary",
+    range: "7d",
+    stats: emptyStats,
+    dailyData: [],
+    dailyRateData: [],
+    hourlyData: [],
+    pieData: [],
+  });
 
   useEffect(() => {
-    if (lastMessage?.type === "history.records") {
-      const incoming = (lastMessage.records ?? []) as HistoryRecord[];
-      setRecords(incoming);
-    }
-    if (lastMessage?.type === "history.record") {
-      const record = lastMessage.record as HistoryRecord;
-      setRecords((prev) => [record, ...prev.filter((r) => r.id !== record.id)]);
+    if (lastMessage?.type === "analytics.summary") {
+      setSummary(normalizeSummary(lastMessage));
     }
   }, [lastMessage]);
 
-  // Request data on mount and range change
   useEffect(() => {
-    const now = new Date();
+    if (!connected) return;
+
     sendJson({
-      type: "history.refresh",
-      timestamp: formatDateTimeForBackend(now),
-      timeSelection: "3", // request max window
-      filters: { anomaly: true, yolo: true },
+      type: "analytics.refresh",
+      timestamp: formatDateTimeForBackend(new Date()),
+      range,
     });
-  }, [range, sendJson]);
+  }, [connected, range, sendJson]);
 
-  const rangeHours = RANGE_OPTIONS.find((r) => r.value === range)?.hours ?? 168;
+  const stats = summary.stats;
+  const dailyData = summary.dailyData;
+  const dailyRateData = summary.dailyRateData;
+  const hourlyData = summary.hourlyData;
 
-  const filteredRecords = useMemo(() => {
-    const now = new Date();
-    const cutoff = new Date(now.getTime() - rangeHours * 60 * 60 * 1000);
-    return records.filter((r) => {
-      const ts = parseTimestamp(r.timestamp);
-      return ts && ts.getTime() >= cutoff.getTime();
-    });
-  }, [records, rangeHours]);
-
-  // Summary stats
-  const stats = useMemo(() => {
-    const total = filteredRecords.length;
-    const anomalyRejects = filteredRecords.filter((r) => r.anomalyReject).length;
-    const yoloRejects = filteredRecords.filter((r) => r.yoloReject).length;
-    const totalDefects = filteredRecords.filter(
-      (r) => r.anomalyReject || r.yoloReject
-    ).length;
-    const passRate = total > 0 ? ((total - totalDefects) / total) * 100 : 0;
-    const defectRate = total > 0 ? (totalDefects / total) * 100 : 0;
-    return { total, anomalyRejects, yoloRejects, totalDefects, passRate, defectRate };
-  }, [filteredRecords]);
-
-  // Daily aggregation for bar + line charts
-  const dailyData = useMemo(() => {
-    const buckets: Record<
-      string,
-      { date: string; total: number; anomaly: number; yolo: number }
-    > = {};
-
-    filteredRecords.forEach((r) => {
-      const ts = parseTimestamp(r.timestamp);
-      if (!ts) return;
-      const key = ts.toISOString().slice(0, 10);
-      if (!buckets[key])
-        buckets[key] = { date: key, total: 0, anomaly: 0, yolo: 0 };
-      buckets[key].total++;
-      if (r.anomalyReject) buckets[key].anomaly++;
-      if (r.yoloReject) buckets[key].yolo++;
-    });
-
-    return Object.values(buckets).sort((a, b) => a.date.localeCompare(b.date));
-  }, [filteredRecords]);
-
-  const dailyRateData = useMemo(() => {
-    return dailyData.map((d) => ({
-      date: d.date,
-      anomalyRate: d.total > 0 ? +((d.anomaly / d.total) * 100).toFixed(1) : 0,
-      yoloRate: d.total > 0 ? +((d.yolo / d.total) * 100).toFixed(1) : 0,
-    }));
-  }, [dailyData]);
-
-  // Hourly distribution
-  const hourlyData = useMemo(() => {
-    const hours = Array.from({ length: 24 }, (_, i) => ({
-      hour: String(i).padStart(2, "0"),
-      defects: 0,
-    }));
-    filteredRecords.forEach((r) => {
-      if (!r.anomalyReject && !r.yoloReject) return;
-      const ts = parseTimestamp(r.timestamp);
-      if (!ts) return;
-      hours[ts.getHours()].defects++;
-    });
-    return hours;
-  }, [filteredRecords]);
-
-  // Pie data
-  const pieData = useMemo(() => {
-    let anomalyOnly = 0;
-    let yoloOnly = 0;
-    let both = 0;
-    let passed = 0;
-    filteredRecords.forEach((r) => {
-      if (r.anomalyReject && r.yoloReject) both++;
-      else if (r.anomalyReject) anomalyOnly++;
-      else if (r.yoloReject) yoloOnly++;
-      else passed++;
-    });
-    return [
-      { name: "Anomaly Only", value: anomalyOnly, fill: PIE_COLORS[0] },
-      { name: "YOLO Only", value: yoloOnly, fill: PIE_COLORS[1] },
-      { name: "Both", value: both, fill: PIE_COLORS[3] },
-      { name: "Passed", value: passed, fill: PIE_COLORS[2] },
-    ].filter((d) => d.value > 0);
-  }, [filteredRecords]);
-
-  const formatDateLabel = (val: string) => {
-    const parts = val.split("-");
-    return parts.length === 3 ? `${parts[2]}/${parts[1]}` : val;
-  };
+  const pieData = useMemo(
+    () => summary.pieData.filter((item) => item.value > 0),
+    [summary.pieData]
+  );
 
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden">
@@ -244,18 +232,29 @@ const Analytics = () => {
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
           <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
-            {/* Header */}
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-foreground tracking-wide uppercase">
-                Analytics
-              </h1>
+              <div>
+                <h1 className="text-xl font-bold text-foreground tracking-wide uppercase">
+                  Analytics
+                </h1>
+
+                <p className="text-xs text-muted-foreground mt-1">
+                  Aggregated inspection summary
+                </p>
+              </div>
+
               <Select value={range} onValueChange={setRange}>
                 <SelectTrigger className="w-[180px] h-9 text-sm font-medium">
                   <SelectValue />
                 </SelectTrigger>
+
                 <SelectContent>
                   {RANGE_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value} className="text-sm">
+                    <SelectItem
+                      key={opt.value}
+                      value={opt.value}
+                      className="text-sm"
+                    >
                       {opt.label}
                     </SelectItem>
                   ))}
@@ -263,25 +262,27 @@ const Analytics = () => {
               </Select>
             </div>
 
-            {/* Summary Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <StatCard
                 title="Total Inspections"
                 value={stats.total}
                 icon={<Eye className="w-4 h-4" />}
               />
+
               <StatCard
                 title="Total Defects"
                 value={stats.totalDefects}
                 icon={<XCircle className="w-4 h-4" />}
                 accent="destructive"
               />
+
               <StatCard
                 title="Defect Rate"
                 value={`${stats.defectRate.toFixed(1)}%`}
                 icon={<TrendingUp className="w-4 h-4" />}
                 accent="destructive"
               />
+
               <StatCard
                 title="Pass Rate"
                 value={`${stats.passRate.toFixed(1)}%`}
@@ -290,39 +291,53 @@ const Analytics = () => {
               />
             </div>
 
-            {/* Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Detections Over Time */}
               <Card className="bg-card border-border">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold text-foreground">
                     Detections Over Time
                   </CardTitle>
                 </CardHeader>
+
                 <CardContent>
-                  <ChartContainer config={barChartConfig} className="h-[280px] w-full">
+                  <ChartContainer
+                    config={barChartConfig}
+                    className="h-[280px] w-full"
+                  >
                     <BarChart data={dailyData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 10% 18%)" />
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="hsl(220 10% 18%)"
+                      />
+
                       <XAxis
                         dataKey="date"
                         tickFormatter={formatDateLabel}
                         tick={{ fontSize: 10 }}
                         stroke="hsl(220 8% 45%)"
                       />
-                      <YAxis tick={{ fontSize: 10 }} stroke="hsl(220 8% 45%)" />
+
+                      <YAxis
+                        tick={{ fontSize: 10 }}
+                        stroke="hsl(220 8% 45%)"
+                      />
+
                       <ChartTooltip content={<ChartTooltipContent />} />
+
                       <Bar
                         dataKey="total"
                         fill="hsl(var(--primary))"
                         radius={[3, 3, 0, 0]}
                         name="Total"
                       />
+
                       <Bar
                         dataKey="anomaly"
                         fill="hsl(0, 72%, 51%)"
                         radius={[3, 3, 0, 0]}
                         name="Anomaly"
                       />
+
                       <Bar
                         dataKey="yolo"
                         fill="hsl(45, 100%, 55%)"
@@ -334,29 +349,39 @@ const Analytics = () => {
                 </CardContent>
               </Card>
 
-              {/* Defect Rate Trend */}
               <Card className="bg-card border-border">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold text-foreground">
                     Defect Rate Trend
                   </CardTitle>
                 </CardHeader>
+
                 <CardContent>
-                  <ChartContainer config={lineChartConfig} className="h-[280px] w-full">
+                  <ChartContainer
+                    config={lineChartConfig}
+                    className="h-[280px] w-full"
+                  >
                     <LineChart data={dailyRateData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 10% 18%)" />
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="hsl(220 10% 18%)"
+                      />
+
                       <XAxis
                         dataKey="date"
                         tickFormatter={formatDateLabel}
                         tick={{ fontSize: 10 }}
                         stroke="hsl(220 8% 45%)"
                       />
+
                       <YAxis
                         tick={{ fontSize: 10 }}
                         stroke="hsl(220 8% 45%)"
                         unit="%"
                       />
+
                       <ChartTooltip content={<ChartTooltipContent />} />
+
                       <Line
                         type="monotone"
                         dataKey="anomalyRate"
@@ -365,6 +390,7 @@ const Analytics = () => {
                         dot={false}
                         name="Anomaly %"
                       />
+
                       <Line
                         type="monotone"
                         dataKey="yoloRate"
@@ -378,24 +404,37 @@ const Analytics = () => {
                 </CardContent>
               </Card>
 
-              {/* Hourly Distribution */}
               <Card className="bg-card border-border">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold text-foreground">
                     Hourly Defect Distribution
                   </CardTitle>
                 </CardHeader>
+
                 <CardContent>
-                  <ChartContainer config={hourlyChartConfig} className="h-[280px] w-full">
+                  <ChartContainer
+                    config={hourlyChartConfig}
+                    className="h-[280px] w-full"
+                  >
                     <BarChart data={hourlyData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 10% 18%)" />
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="hsl(220 10% 18%)"
+                      />
+
                       <XAxis
                         dataKey="hour"
                         tick={{ fontSize: 10 }}
                         stroke="hsl(220 8% 45%)"
                       />
-                      <YAxis tick={{ fontSize: 10 }} stroke="hsl(220 8% 45%)" />
+
+                      <YAxis
+                        tick={{ fontSize: 10 }}
+                        stroke="hsl(220 8% 45%)"
+                      />
+
                       <ChartTooltip content={<ChartTooltipContent />} />
+
                       <Bar
                         dataKey="defects"
                         fill="hsl(0, 72%, 51%)"
@@ -407,17 +446,21 @@ const Analytics = () => {
                 </CardContent>
               </Card>
 
-              {/* Defects by Type */}
               <Card className="bg-card border-border">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold text-foreground">
                     Defects by Type
                   </CardTitle>
                 </CardHeader>
+
                 <CardContent className="flex items-center justify-center">
-                  <ChartContainer config={pieChartConfig} className="h-[280px] w-full">
+                  <ChartContainer
+                    config={pieChartConfig}
+                    className="h-[280px] w-full"
+                  >
                     <PieChart>
                       <ChartTooltip content={<ChartTooltipContent />} />
+
                       <Pie
                         data={pieData}
                         dataKey="value"
@@ -430,7 +473,10 @@ const Analytics = () => {
                         stroke="hsl(220 14% 11%)"
                       >
                         {pieData.map((entry, i) => (
-                          <Cell key={i} fill={entry.fill} />
+                          <Cell
+                            key={`${entry.name}-${i}`}
+                            fill={entry.fill ?? "hsl(var(--primary))"}
+                          />
                         ))}
                       </Pie>
                     </PieChart>
@@ -469,9 +515,12 @@ const StatCard = ({
       >
         {icon}
       </div>
+
       <div>
         <p className="text-xs text-muted-foreground font-medium">{title}</p>
-        <p className="text-xl font-bold text-foreground tabular-nums">{value}</p>
+        <p className="text-xl font-bold text-foreground tabular-nums">
+          {value}
+        </p>
       </div>
     </CardContent>
   </Card>

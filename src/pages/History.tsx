@@ -160,6 +160,29 @@ const History = () => {
       return;
     }
 
+    if (lastMessage?.type === "history.image.response") {
+      if (!lastMessage.ok) {
+        console.error("history.image.response failed:", lastMessage.error);
+        return;
+      }
+
+      const id = Number(lastMessage.id);
+
+      setRecords((prev) =>
+        prev.map((r) =>
+          r.id === id
+            ? {
+                ...r,
+                imageUrl: lastMessage.imageUrl ?? r.imageUrl,
+                overlayUrl: lastMessage.overlayUrl ?? r.overlayUrl,
+              }
+            : r
+        )
+      );
+
+      return;
+    }
+
     if (lastMessage?.type === "history.record") {
       const record = lastMessage.record as HistoryRecord;
 
@@ -185,6 +208,11 @@ const History = () => {
     if (manualTimeEnabled && selectedDateTime) return selectedDateTime;
     return currentTime;
   }, [manualTimeEnabled, selectedDateTime, currentTime]);
+
+  const backendReferenceTime = useMemo(() => {
+    if (manualTimeEnabled && selectedDateTime) return selectedDateTime;
+    return new Date();
+  }, [manualTimeEnabled, selectedDateTime]);
 
   const filteredResults = useMemo(() => {
     const selectedMinutes = timeSelectionToMinutes(timeSelection);
@@ -273,26 +301,41 @@ const History = () => {
   const sendRefresh = useCallback(() => {
     sendJson({
       type: "history.refresh",
-      timestamp: formatDateTimeForBackend(referenceTime),
+      timestamp: formatDateTimeForBackend(
+        manualTimeEnabled && selectedDateTime ? selectedDateTime : new Date()
+      ),
       timeSelection,
       filters: {
         anomaly: filterAnomaly,
         yolo: filterYolo,
       },
     });
-  }, [referenceTime, timeSelection, filterAnomaly, filterYolo, sendJson]);
+  }, [
+    manualTimeEnabled,
+    selectedDateTime,
+    timeSelection,
+    filterAnomaly,
+    filterYolo,
+    sendJson,
+  ]);
 
   useEffect(() => {
     sendJson({
       type: "history.refresh",
-      timestamp: formatDateTimeForBackend(referenceTime),
+      timestamp: formatDateTimeForBackend(backendReferenceTime),
       timeSelection,
       filters: {
         anomaly: filterAnomaly,
         yolo: filterYolo,
       },
     });
-  }, [referenceTime, timeSelection, filterAnomaly, filterYolo, sendJson]);
+  }, [
+    backendReferenceTime,
+    timeSelection,
+    filterAnomaly,
+    filterYolo,
+    sendJson,
+  ]);
 
   const displayedReferenceLabel = manualTimeEnabled
     ? `${selectedDateTime?.toLocaleDateString("en-GB", {
@@ -305,6 +348,19 @@ const History = () => {
         second: "2-digit",
       })}`
     : "Live time";
+
+  const handleSelectRecord = useCallback(
+  (record: HistoryRecord) => {
+    setSelectedRecordId(record.id);
+    setDisplayMode("image");
+
+    sendJson({
+      type: "history.image.request",
+      id: record.id,
+    });
+  },
+  [sendJson]
+  );
 
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden">
@@ -538,10 +594,7 @@ const History = () => {
               {pageResults.map((res) => (
                 <button
                   key={res.id}
-                  onClick={() => {
-                    setSelectedRecordId(res.id);
-                    setDisplayMode("image");
-                  }}
+                  onClick={() => handleSelectRecord(res)}
                   className={cn(
                     "w-full text-left px-3 py-2 flex items-center gap-2 text-sm font-mono font-medium transition-colors",
                     selectedRecordId === res.id

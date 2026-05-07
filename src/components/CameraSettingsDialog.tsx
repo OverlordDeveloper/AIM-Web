@@ -131,10 +131,10 @@ const CameraSettingsPanel = ({ settings, onUpdate }: CameraSettingsPanelProps) =
 
           <div className="min-w-[150px]">
             <InspectionSlider
-              label="Exposure (µs)"
+              label="Exposure (us)"
               value={settings.exposureTime}
               onChange={(v) => onUpdate("exposureTime", v)}
-              max={100000}
+              max={1000}
               min={1}
             />
           </div>
