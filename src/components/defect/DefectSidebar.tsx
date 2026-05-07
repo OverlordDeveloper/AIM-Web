@@ -105,13 +105,13 @@ interface ChannelSliderProps {
   onChange: (v: number) => void;
 }
 
-const ChannelSlider = ({ value, color, disabled, onChange }: ChannelSliderProps) => {
+const ChannelSlider = ({ value, disabled, onChange }: ChannelSliderProps) => {
   return (
     <div className="relative px-0.5">
       {/* tick marks */}
       <div className="absolute inset-x-0.5 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
         {[0, 1, 2, 3, 4].map((i) => (
-          <span key={i} className="w-px h-2 bg-border/70" />
+          <span key={i} className="w-px h-2 bg-border/40" />
         ))}
       </div>
       <SliderPrimitive.Root
@@ -126,12 +126,12 @@ const ChannelSlider = ({ value, color, disabled, onChange }: ChannelSliderProps)
         <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-sm bg-background border border-border">
           <SliderPrimitive.Range
             className="absolute h-full"
-            style={{ background: disabled ? "hsl(var(--muted-foreground) / 0.3)" : "hsl(var(--foreground) / 0.7)" }}
+            style={{ background: disabled ? "hsl(var(--muted-foreground) / 0.25)" : "hsl(var(--sidebar-foreground) / 0.55)" }}
           />
         </SliderPrimitive.Track>
         <SliderPrimitive.Thumb
           className={cn(
-            "block h-4 w-2 rounded-[2px] border border-border bg-foreground shadow-md transition-colors",
+            "block h-3.5 w-1.5 rounded-[2px] border border-border bg-foreground shadow-sm transition-colors",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             "disabled:pointer-events-none disabled:opacity-50"
           )}
