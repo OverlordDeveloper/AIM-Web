@@ -41,7 +41,7 @@ interface ActionTileProps {
   label: string;
   activeStatus: string;
   inactiveStatus: string;
-  tone: "primary" | "destructive";
+  tone: "success" | "destructive";
 }
 
 const ActionTile = ({
@@ -53,10 +53,10 @@ const ActionTile = ({
   inactiveStatus,
   tone,
 }: ActionTileProps) => {
-  const toneCls = tone === "primary"
+  const toneCls = tone === "success"
     ? {
-        on: "bg-primary/15 border-primary text-primary",
-        dot: "bg-primary text-primary",
+        on: "bg-success/15 border-success text-success",
+        dot: "bg-success text-success",
       }
     : {
         on: "bg-destructive/15 border-destructive text-destructive ring-1 ring-inset ring-destructive/30",
