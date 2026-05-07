@@ -238,10 +238,11 @@ const DefectHistory = ({
                       return (
                         <span
                           key={cid}
-                          title={cls.name}
-                          className="w-2 h-2 rounded-full"
-                          style={{ background: `hsl(${cls.color})` }}
-                        />
+                          className="px-1.5 py-0.5 rounded-md border text-[10px] font-mono leading-none"
+                          style={{ borderColor: `hsl(${cls.color})`, color: `hsl(${cls.color})` }}
+                        >
+                          {cls.name}
+                        </span>
                       );
                     })}
                   </div>
