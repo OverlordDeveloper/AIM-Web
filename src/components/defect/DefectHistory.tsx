@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, ChevronDown, X } from "lucide-react";
+import { CalendarIcon, X } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import type { DetectionBox, DetectionClass, DetectionFrame } from "@/lib/defectMock";
+import type { DetectionClass, DetectionFrame } from "@/lib/defectMock";
 
 type QuickRange = "5m" | "1h" | "today" | "all";
-type SortBy = "newest" | "oldest" | "confidence" | "count";
 
 interface DefectHistoryProps {
   frames: DetectionFrame[];
@@ -24,15 +22,11 @@ interface DefectHistoryProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const formatTime = (iso: string) => new Date(iso).toLocaleTimeString([], { hour12: false });
 const formatDateTime = (iso: string) => {
   const d = new Date(iso);
   return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour12: false })}`;
 };
-
-interface Row {
-  frame: DetectionFrame;
-  qualifying: DetectionBox[];
-}
 
 const DefectHistory = ({
   frames,
@@ -46,11 +40,8 @@ const DefectHistory = ({
   const [quickRange, setQuickRange] = useState<QuickRange>("all");
   const [selectedClassIds, setSelectedClassIds] = useState<Set<string>>(new Set());
   const [minConfidence, setMinConfidence] = useState(0);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<SortBy>("newest");
-  const [groupByClass, setGroupByClass] = useState(false);
 
-  // Reset filters when model changes
+  // Reset class filter when model (classMap) changes
   useEffect(() => {
     setSelectedClassIds(new Set());
     setMinConfidence(0);
@@ -65,26 +56,9 @@ const DefectHistory = ({
     });
   };
 
-  const resetAll = () => {
-    setDate(undefined);
-    setQuickRange("all");
-    setSelectedClassIds(new Set());
-    setMinConfidence(0);
-    setSortBy("newest");
-    setGroupByClass(false);
-  };
-
-  const filtersActive =
-    !!date ||
-    quickRange !== "all" ||
-    selectedClassIds.size > 0 ||
-    minConfidence > 0 ||
-    sortBy !== "newest" ||
-    groupByClass;
-
-  const filtered: Row[] = useMemo(() => {
+  const filtered = useMemo(() => {
     const now = Date.now();
-    const out: Row[] = [];
+    const out: { frame: DetectionFrame; qualifying: typeof frames[number]["boxes"] }[] = [];
     for (const f of frames) {
       const t = new Date(f.timestamp).getTime();
       if (date) {
@@ -122,44 +96,13 @@ const DefectHistory = ({
           b.confidence >= minConfidence &&
           (selectedClassIds.size === 0 || selectedClassIds.has(b.classId))
       );
+      // If user has any active filter (class or confidence), require at least one qualifying box.
       const hasActiveFilter = selectedClassIds.size > 0 || minConfidence > 0;
       if (hasActiveFilter && qualifying.length === 0) continue;
       out.push({ frame: f, qualifying });
     }
-
-    out.sort((a, b) => {
-      switch (sortBy) {
-        case "oldest":
-          return new Date(a.frame.timestamp).getTime() - new Date(b.frame.timestamp).getTime();
-        case "confidence": {
-          const ac = a.qualifying.reduce((m, x) => Math.max(m, x.confidence), 0);
-          const bc = b.qualifying.reduce((m, x) => Math.max(m, x.confidence), 0);
-          return bc - ac;
-        }
-        case "count":
-          return b.qualifying.length - a.qualifying.length;
-        case "newest":
-        default:
-          return new Date(b.frame.timestamp).getTime() - new Date(a.frame.timestamp).getTime();
-      }
-    });
     return out;
-  }, [frames, date, quickRange, selectedClassIds, minConfidence, sortBy]);
-
-  const grouped = useMemo(() => {
-    if (!groupByClass) return null;
-    const map = new Map<string, Row[]>();
-    for (const row of filtered) {
-      const ids = new Set(row.qualifying.map((b) => b.classId));
-      ids.forEach((cid) => {
-        if (!map.has(cid)) map.set(cid, []);
-        map.get(cid)!.push(row);
-      });
-    }
-    return Array.from(map.entries())
-      .map(([classId, rows]) => ({ classId, rows }))
-      .sort((a, b) => b.rows.length - a.rows.length);
-  }, [filtered, groupByClass]);
+  }, [frames, date, quickRange, selectedClassIds, minConfidence]);
 
   const ranges: { id: QuickRange; label: string }[] = [
     { id: "5m", label: "Last 5 min" },
@@ -168,51 +111,6 @@ const DefectHistory = ({
     { id: "all", label: "All" },
   ];
 
-  const sortOptions: { id: SortBy; label: string }[] = [
-    { id: "newest", label: "Newest" },
-    { id: "oldest", label: "Oldest" },
-    { id: "confidence", label: "Conf ↓" },
-    { id: "count", label: "Count ↓" },
-  ];
-
-  const renderRow = (row: Row) => {
-    const f = row.frame;
-    const isSelected = f.id === selectedId;
-    const uniqueClassIds = Array.from(new Set(row.qualifying.map((b) => b.classId)));
-    return (
-      <button
-        key={f.id}
-        onClick={() => onSelect(f.id)}
-        className={cn(
-          "text-left px-3 py-2 border-b border-border/50 transition-colors w-full",
-          isSelected
-            ? "bg-muted/40 ring-1 ring-inset ring-primary"
-            : "hover:bg-muted/20"
-        )}
-      >
-        <div className="flex items-center justify-between text-[11px] font-mono">
-          <span className="text-foreground">{formatDateTime(f.timestamp)}</span>
-          <span className="text-muted-foreground">{row.qualifying.length} det</span>
-        </div>
-        <div className="mt-1 flex flex-wrap gap-1 min-h-[10px]">
-          {uniqueClassIds.map((cid) => {
-            const cls = classMap[cid];
-            if (!cls) return null;
-            return (
-              <span
-                key={cid}
-                className="px-1.5 py-0.5 rounded-md border text-[10px] font-mono leading-none"
-                style={{ borderColor: `hsl(${cls.color})`, color: `hsl(${cls.color})` }}
-              >
-                {cls.name}
-              </span>
-            );
-          })}
-        </div>
-      </button>
-    );
-  };
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -220,246 +118,185 @@ const DefectHistory = ({
         className="w-[380px] sm:max-w-[380px] p-0 flex flex-col bg-card border-l border-border"
       >
         <SheetHeader className="px-3 py-2 border-b border-border">
-          <div className="flex items-center justify-between gap-2">
-            <SheetTitle className="text-[11px] font-mono uppercase tracking-wider text-foreground">
-              History
-            </SheetTitle>
-            <div className="flex items-center gap-1">
-              {!advancedOpen && filtersActive && (
-                <button
-                  onClick={resetAll}
-                  className="text-[10px] font-mono text-amber-400 hover:text-amber-300"
-                >
-                  ● reset
-                </button>
-              )}
-              <button
-                onClick={() => setAdvancedOpen((v) => !v)}
-                className={cn(
-                  "flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[10px] font-mono uppercase tracking-wider transition-colors",
-                  advancedOpen
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Advanced
-                <ChevronDown
-                  className={cn("w-3 h-3 transition-transform", advancedOpen && "rotate-180")}
-                />
-              </button>
-            </div>
-          </div>
+          <SheetTitle className="text-[11px] font-mono uppercase tracking-wider text-foreground">
+            History
+          </SheetTitle>
         </SheetHeader>
 
-        {advancedOpen && (
-          <div className="px-3 py-2 space-y-2 border-b border-border">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={cn(
-                    "h-8 w-full justify-start text-[11px] font-mono bg-secondary border-border",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="w-3.5 h-3.5 mr-2" />
-                  {date ? format(date, "PPP") : "Any date"}
-                  {date && (
-                    <X
-                      className="w-3 h-3 ml-auto opacity-60 hover:opacity-100"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setDate(undefined);
-                      }}
-                    />
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-
-            <div className="grid grid-cols-4 gap-1">
-              {ranges.map((r) => (
-                <Button
-                  key={r.id}
-                  size="sm"
-                  variant={quickRange === r.id ? "default" : "secondary"}
-                  className="h-7 text-[10px] px-1"
-                  onClick={() => setQuickRange(r.id)}
-                >
-                  {r.label}
-                </Button>
-              ))}
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
-                  Categories
-                </span>
-                {selectedClassIds.size > 0 && (
-                  <button
-                    onClick={() => setSelectedClassIds(new Set())}
-                    className="text-[10px] font-mono text-muted-foreground hover:text-foreground"
-                  >
-                    Clear
-                  </button>
+        <div className="px-3 py-2 space-y-2 border-b border-border">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "h-8 w-full justify-start text-[11px] font-mono bg-secondary border-border",
+                  !date && "text-muted-foreground"
                 )}
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {Object.values(classMap).map((cls) => {
-                  const active = selectedClassIds.has(cls.id);
-                  return (
-                    <button
-                      key={cls.id}
-                      onClick={() => toggleClass(cls.id)}
-                      className={cn(
-                        "flex items-center gap-1 px-1.5 py-0.5 rounded-sm border text-[10px] font-mono transition-colors",
-                        active
-                          ? "bg-muted border-primary ring-1 ring-primary text-foreground"
-                          : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
-                      )}
-                    >
-                      <span
-                        className="w-2 h-2 rounded-full"
-                        style={{ background: `hsl(${cls.color})` }}
-                      />
-                      {cls.name}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
-                  Min confidence
-                </span>
-                <span className="text-[10px] font-mono text-foreground tabular-nums">
-                  {Math.round(minConfidence * 100)}%
-                </span>
-              </div>
-              <Slider
-                value={[Math.round(minConfidence * 100)]}
-                onValueChange={(v) => setMinConfidence((v[0] ?? 0) / 100)}
-                min={0}
-                max={100}
-                step={5}
-                className="py-1"
-              />
-              <div className="grid grid-cols-4 gap-1">
-                {[0, 50, 75, 90].map((p) => {
-                  const active = Math.round(minConfidence * 100) === p;
-                  return (
-                    <Button
-                      key={p}
-                      size="sm"
-                      variant={active ? "default" : "secondary"}
-                      className="h-6 text-[10px] px-1"
-                      onClick={() => setMinConfidence(p / 100)}
-                    >
-                      {p}%
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
-                Sort
-              </span>
-              <div className="grid grid-cols-4 gap-1">
-                {sortOptions.map((s) => (
-                  <Button
-                    key={s.id}
-                    size="sm"
-                    variant={sortBy === s.id ? "default" : "secondary"}
-                    className="h-7 text-[10px] px-1"
-                    onClick={() => setSortBy(s.id)}
-                  >
-                    {s.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
-                Group by class
-              </span>
-              <Switch checked={groupByClass} onCheckedChange={setGroupByClass} />
-            </div>
-
-            <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground pt-1">
-              <button
-                onClick={resetAll}
-                className="hover:text-foreground"
               >
-                Reset all
-              </button>
-              <div className="flex items-center gap-1">
-                <span>Results</span>
-                <Badge variant="secondary" className="text-[10px] font-mono">
-                  {filtered.length}
-                </Badge>
-              </div>
+                <CalendarIcon className="w-3.5 h-3.5 mr-2" />
+                {date ? format(date, "PPP") : "Any date"}
+                {date && (
+                  <X
+                    className="w-3 h-3 ml-auto opacity-60 hover:opacity-100"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setDate(undefined);
+                    }}
+                  />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+
+          <div className="grid grid-cols-4 gap-1">
+            {ranges.map((r) => (
+              <Button
+                key={r.id}
+                size="sm"
+                variant={quickRange === r.id ? "default" : "secondary"}
+                className="h-7 text-[10px] px-1"
+                onClick={() => setQuickRange(r.id)}
+              >
+                {r.label}
+              </Button>
+            ))}
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+                Categories
+              </span>
+              {selectedClassIds.size > 0 && (
+                <button
+                  onClick={() => setSelectedClassIds(new Set())}
+                  className="text-[10px] font-mono text-muted-foreground hover:text-foreground"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {Object.values(classMap).map((cls) => {
+                const active = selectedClassIds.has(cls.id);
+                return (
+                  <button
+                    key={cls.id}
+                    onClick={() => toggleClass(cls.id)}
+                    className={cn(
+                      "flex items-center gap-1 px-1.5 py-0.5 rounded-sm border text-[10px] font-mono transition-colors",
+                      active
+                        ? "bg-muted border-primary ring-1 ring-primary text-foreground"
+                        : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
+                    )}
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{ background: `hsl(${cls.color})` }}
+                    />
+                    {cls.name}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        )}
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+                Min confidence
+              </span>
+              <span className="text-[10px] font-mono text-foreground tabular-nums">
+                {Math.round(minConfidence * 100)}%
+              </span>
+            </div>
+            <Slider
+              value={[Math.round(minConfidence * 100)]}
+              onValueChange={(v) => setMinConfidence((v[0] ?? 0) / 100)}
+              min={0}
+              max={100}
+              step={5}
+              className="py-1"
+            />
+            <div className="grid grid-cols-4 gap-1">
+              {[0, 50, 75, 90].map((p) => {
+                const active = Math.round(minConfidence * 100) === p;
+                return (
+                  <Button
+                    key={p}
+                    size="sm"
+                    variant={active ? "default" : "secondary"}
+                    className="h-6 text-[10px] px-1"
+                    onClick={() => setMinConfidence(p / 100)}
+                  >
+                    {p}%
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+            <span>Results</span>
+            <Badge variant="secondary" className="text-[10px] font-mono">
+              {filtered.length}
+            </Badge>
+          </div>
+        </div>
 
         <ScrollArea className="flex-1">
           <div className="flex flex-col">
-            {grouped ? (
-              grouped.length === 0 ? (
-                <div className="text-[10px] text-muted-foreground py-6 px-3 font-mono">
-                  No frames match the filter
-                </div>
-              ) : (
-                grouped.map(({ classId, rows }) => {
-                  const cls = classMap[classId];
-                  return (
-                    <div key={classId}>
-                      <div className="px-3 py-1.5 bg-muted/30 border-b border-border flex items-center justify-between sticky top-0">
-                        {cls ? (
-                          <span
-                            className="px-1.5 py-0.5 rounded-md border text-[10px] font-mono leading-none"
-                            style={{
-                              borderColor: `hsl(${cls.color})`,
-                              color: `hsl(${cls.color})`,
-                            }}
-                          >
-                            {cls.name}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-mono">{classId}</span>
-                        )}
-                        <span className="text-[10px] font-mono text-muted-foreground">
-                          {rows.length}
+            {filtered.map(({ frame: f, qualifying }) => {
+              const isSelected = f.id === selectedId;
+              const uniqueClassIds = Array.from(new Set(qualifying.map((b) => b.classId)));
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => onSelect(f.id)}
+                  className={cn(
+                    "text-left px-3 py-2 border-b border-border/50 transition-colors",
+                    isSelected
+                      ? "bg-muted/40 ring-1 ring-inset ring-primary"
+                      : "hover:bg-muted/20"
+                  )}
+                >
+                  <div className="flex items-center justify-between text-[11px] font-mono">
+                    <span className="text-foreground">{formatDateTime(f.timestamp)}</span>
+                    <span className="text-muted-foreground">{qualifying.length} det</span>
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1 min-h-[10px]">
+                    {uniqueClassIds.map((cid) => {
+                      const cls = classMap[cid];
+                      if (!cls) return null;
+                      return (
+                        <span
+                          key={cid}
+                          className="px-1.5 py-0.5 rounded-md border text-[10px] font-mono leading-none"
+                          style={{ borderColor: `hsl(${cls.color})`, color: `hsl(${cls.color})` }}
+                        >
+                          {cls.name}
                         </span>
-                      </div>
-                      {rows.map(renderRow)}
-                    </div>
-                  );
-                })
-              )
-            ) : filtered.length === 0 ? (
+                      );
+                    })}
+                  </div>
+                </button>
+              );
+            })}
+            {filtered.length === 0 && (
               <div className="text-[10px] text-muted-foreground py-6 px-3 font-mono">
                 No frames match the filter
               </div>
-            ) : (
-              filtered.map(renderRow)
             )}
           </div>
         </ScrollArea>
