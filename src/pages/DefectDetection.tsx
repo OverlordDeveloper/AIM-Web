@@ -104,6 +104,8 @@ const DefectDetection = () => {
           }
           detectEnabled={detectEnabled}
           onDetectEnabledChange={setDetectEnabled}
+          rejectEnabled={rejectEnabled}
+          onRejectEnabledChange={setRejectEnabled}
           autoScroll={viewerMode === "live"}
           onAutoScrollToggle={() =>
             viewerMode === "live" ? setViewerMode("paused") : handleResumeLive()
