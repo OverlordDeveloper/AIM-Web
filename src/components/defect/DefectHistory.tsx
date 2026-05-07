@@ -222,9 +222,9 @@ const DefectHistory = ({
 
         <ScrollArea className="flex-1">
           <div className="flex flex-col">
-            {filtered.map((f) => {
+            {filtered.map(({ frame: f, qualifying }) => {
               const isSelected = f.id === selectedId;
-              const uniqueClassIds = Array.from(new Set(f.boxes.map((b) => b.classId)));
+              const uniqueClassIds = Array.from(new Set(qualifying.map((b) => b.classId)));
               return (
                 <button
                   key={f.id}
@@ -238,7 +238,7 @@ const DefectHistory = ({
                 >
                   <div className="flex items-center justify-between text-[11px] font-mono">
                     <span className="text-foreground">{formatDateTime(f.timestamp)}</span>
-                    <span className="text-muted-foreground">{f.boxes.length} det</span>
+                    <span className="text-muted-foreground">{qualifying.length} det</span>
                   </div>
                   <div className="mt-1 flex flex-wrap gap-1 min-h-[10px]">
                     {uniqueClassIds.map((cid) => {
