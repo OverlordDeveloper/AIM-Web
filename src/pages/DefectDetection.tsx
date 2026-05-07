@@ -21,6 +21,7 @@ const DefectDetection = () => {
   const [selectedModelId, setSelectedModelId] = useState(MOCK_MODELS[0].id);
   const [classStates, setClassStates] = useState<Record<string, ClassState>>({});
   const [detectEnabled, setDetectEnabled] = useState(true);
+  const [rejectEnabled, setRejectEnabled] = useState(false);
   const [frames, setFrames] = useState<DetectionFrame[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [viewerMode, setViewerMode] = useState<"live" | "paused">("live");
@@ -103,6 +104,8 @@ const DefectDetection = () => {
           }
           detectEnabled={detectEnabled}
           onDetectEnabledChange={setDetectEnabled}
+          rejectEnabled={rejectEnabled}
+          onRejectEnabledChange={setRejectEnabled}
           autoScroll={viewerMode === "live"}
           onAutoScrollToggle={() =>
             viewerMode === "live" ? setViewerMode("paused") : handleResumeLive()
