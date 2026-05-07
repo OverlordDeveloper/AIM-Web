@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -37,6 +37,21 @@ const DefectHistory = ({
 }: DefectHistoryProps) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [quickRange, setQuickRange] = useState<QuickRange>("all");
+  const [selectedClassIds, setSelectedClassIds] = useState<Set<string>>(new Set());
+
+  // Reset class filter when model (classMap) changes
+  useEffect(() => {
+    setSelectedClassIds(new Set());
+  }, [classMap]);
+
+  const toggleClass = (id: string) => {
+    setSelectedClassIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const filtered = useMemo(() => {
     const now = Date.now();
