@@ -66,24 +66,27 @@ const DefectHistory = ({
         )
           return false;
       }
-      switch (quickRange) {
-        case "5m":
-          return now - t <= 5 * 60 * 1000;
-        case "1h":
-          return now - t <= 60 * 60 * 1000;
-        case "today": {
-          const d = new Date(f.timestamp);
-          const today = new Date();
-          return (
-            d.getFullYear() === today.getFullYear() &&
-            d.getMonth() === today.getMonth() &&
-            d.getDate() === today.getDate()
-          );
+      const inRange = (() => {
+        switch (quickRange) {
+          case "5m":
+            return now - t <= 5 * 60 * 1000;
+          case "1h":
+            return now - t <= 60 * 60 * 1000;
+          case "today": {
+            const d = new Date(f.timestamp);
+            const today = new Date();
+            return (
+              d.getFullYear() === today.getFullYear() &&
+              d.getMonth() === today.getMonth() &&
+              d.getDate() === today.getDate()
+            );
+          }
+          case "all":
+          default:
+            return true;
         }
-        case "all":
-        default:
-          break;
-      }
+      })();
+      if (!inRange) return false;
       if (selectedClassIds.size > 0) {
         const hit = f.boxes.some((b) => selectedClassIds.has(b.classId));
         if (!hit) return false;
