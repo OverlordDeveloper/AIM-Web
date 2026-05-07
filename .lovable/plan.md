@@ -1,33 +1,25 @@
-## Add category filter to History drawer
+## Replace color dots with colored-border class chips in history list
 
-Add a class/category multi-select filter inside the History drawer so users can narrow frames to ones containing specific detection classes (e.g. only "Crack").
+In `src/components/defect/DefectHistory.tsx`, in the per-frame list item, replace the row of small colored dots (`uniqueClassIds.map(...)` rendering `<span className="w-2 h-2 rounded-full">`) with small pill chips showing the class name.
 
-### UI
+### Chip style
+- Rounded corners (`rounded-md`), thin border in the class color, transparent background.
+- Text color matches the class color.
+- Compact: `px-1.5 py-0.5 text-[10px] font-mono leading-none`.
+- Border + text use inline style `borderColor: hsl(var)` / `color: hsl(var)` since colors come from `cls.color`.
 
-In `DefectHistory.tsx`, between the quick-range buttons and the results count, add a "Categories" row:
+Example:
+```tsx
+<span
+  key={cid}
+  className="px-1.5 py-0.5 rounded-md border text-[10px] font-mono leading-none"
+  style={{ borderColor: `hsl(${cls.color})`, color: `hsl(${cls.color})` }}
+>
+  {cls.name}
+</span>
+```
 
-- Compact horizontal wrap of toggle chips, one per class from `classMap`.
-- Each chip shows: small color dot + class name.
-- Selected chips: filled with `bg-muted` + `ring-1 ring-primary`.
-- Unselected: outline only.
-- Small `Clear` text-button on the right that resets selection (only visible when any selected).
-- Default: nothing selected = "show all classes" (no filter).
-
-### Filter logic
-
-- New state `selectedClassIds: Set<string>` in `DefectHistory`.
-- A frame matches when `selectedClassIds.size === 0` OR at least one of its `boxes[].classId` is in the set (OR semantics — matches "any of").
-- Combined with existing date + quick range filters via `useMemo`.
-- Empty-state message updates to "No frames match the filter" (already in place).
-
-### Reset behavior
-
-- When the model changes, the `classMap` keys change. Reset `selectedClassIds` to empty in a `useEffect` watching `classMap`.
-
-### Files to modify
-
-- `src/components/defect/DefectHistory.tsx` only.
-
-### Out of scope
-
-- No AND mode, no per-class threshold filter, no changes elsewhere.
+### Scope
+- Only the chip rendering inside the history list rows changes.
+- The category filter chips at the top (which already show name + dot) stay as-is.
+- No logic, state, or filter changes.
