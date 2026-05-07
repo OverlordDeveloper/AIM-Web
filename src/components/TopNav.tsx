@@ -1,10 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { Activity, ShieldAlert, Clock, BarChart3 } from "lucide-react";
+import { Activity, ShieldAlert, Clock, BarChart3, ScanSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
   { to: "/", label: "Inspector", icon: Activity },
   { to: "/anomaly-detection", label: "Anomaly Detection", icon: ShieldAlert },
+  { to: "/defect-detection", label: "Defect Detection", icon: ScanSearch },
   { to: "/history", label: "History", icon: Clock },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
 ];
