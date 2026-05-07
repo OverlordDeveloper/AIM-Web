@@ -183,7 +183,7 @@ const DefectSidebar = ({
             label="Detection"
             activeStatus="● Active"
             inactiveStatus="○ Standby"
-            tone="primary"
+            tone="success"
           />
           <ActionTile
             active={rejectEnabled}
