@@ -105,13 +105,13 @@ interface ChannelSliderProps {
   onChange: (v: number) => void;
 }
 
-const ChannelSlider = ({ value, color, disabled, onChange }: ChannelSliderProps) => {
+const ChannelSlider = ({ value, disabled, onChange }: ChannelSliderProps) => {
   return (
     <div className="relative px-0.5">
       {/* tick marks */}
       <div className="absolute inset-x-0.5 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
         {[0, 1, 2, 3, 4].map((i) => (
-          <span key={i} className="w-px h-2 bg-border/70" />
+          <span key={i} className="w-px h-2 bg-border/40" />
         ))}
       </div>
       <SliderPrimitive.Root
@@ -126,12 +126,12 @@ const ChannelSlider = ({ value, color, disabled, onChange }: ChannelSliderProps)
         <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-sm bg-background border border-border">
           <SliderPrimitive.Range
             className="absolute h-full"
-            style={{ background: disabled ? "hsl(var(--muted-foreground) / 0.3)" : "hsl(var(--foreground) / 0.7)" }}
+            style={{ background: disabled ? "hsl(var(--muted-foreground) / 0.25)" : "hsl(var(--sidebar-foreground) / 0.55)" }}
           />
         </SliderPrimitive.Track>
         <SliderPrimitive.Thumb
           className={cn(
-            "block h-4 w-2 rounded-[2px] border border-border bg-foreground shadow-md transition-colors",
+            "block h-3.5 w-1.5 rounded-[2px] border border-border bg-foreground shadow-sm transition-colors",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             "disabled:pointer-events-none disabled:opacity-50"
           )}
@@ -267,25 +267,20 @@ const DefectSidebar = ({
                   enabled ? "bg-secondary/40 hover:bg-secondary/70" : "bg-transparent"
                 )}
               >
-                {/* Color bar */}
-                <span
-                  className="w-[3px] shrink-0 self-stretch"
-                  style={{
-                    background: `hsl(${cls.color})`,
-                    opacity: enabled ? 1 : 0.3,
-                  }}
-                />
-                <div className={cn("flex-1 px-2.5 py-2 space-y-1.5", !enabled && "opacity-50")}>
+                <div className={cn("flex-1 pl-2.5 pr-2 py-2 space-y-1.5", !enabled && "opacity-60")}>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-foreground flex-1 truncate">
-                      {cls.name}
+                    <span
+                      className="text-[11px] font-mono font-semibold uppercase tracking-wider flex-1 truncate"
+                      style={{ color: enabled ? `hsl(${cls.color})` : "hsl(var(--muted-foreground))" }}
+                    >
+                      [{cls.name}]
                     </span>
                     <span
                       className={cn(
                         "px-1.5 py-0.5 rounded-sm border text-[10px] font-mono tabular-nums leading-none",
                         enabled
-                          ? "bg-background border-border text-foreground"
-                          : "bg-background/40 border-border text-muted-foreground"
+                          ? "bg-background/60 border-border text-foreground"
+                          : "bg-transparent border-border/50 text-muted-foreground"
                       )}
                     >
                       {enabled ? state.threshold.toFixed(2) : "OFF"}
@@ -294,13 +289,16 @@ const DefectSidebar = ({
                       type="button"
                       onClick={() => onClassToggle(cls.id, !enabled)}
                       className={cn(
-                        "flex items-center justify-center w-6 h-6 rounded-sm border transition-colors",
+                        "flex items-center justify-center gap-1 w-7 h-6 rounded-sm border transition-colors",
                         enabled
-                          ? "border-border bg-background/60 text-success"
-                          : "border-border/50 bg-transparent text-muted-foreground hover:border-foreground/40"
+                          ? "bg-foreground/10 border-foreground/30 text-foreground"
+                          : "bg-transparent border-border/60 text-muted-foreground hover:border-foreground/40"
                       )}
                       aria-label={enabled ? "Disable class" : "Enable class"}
                     >
+                      {enabled && (
+                        <span className="w-1 h-1 rounded-full bg-[hsl(var(--status-online))] led-pulse" />
+                      )}
                       <Power className="w-3 h-3" />
                     </button>
                   </div>
