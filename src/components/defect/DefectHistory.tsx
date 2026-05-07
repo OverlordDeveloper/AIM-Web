@@ -82,10 +82,15 @@ const DefectHistory = ({
         }
         case "all":
         default:
-          return true;
+          break;
       }
+      if (selectedClassIds.size > 0) {
+        const hit = f.boxes.some((b) => selectedClassIds.has(b.classId));
+        if (!hit) return false;
+      }
+      return true;
     });
-  }, [frames, date, quickRange]);
+  }, [frames, date, quickRange, selectedClassIds]);
 
   const ranges: { id: QuickRange; label: string }[] = [
     { id: "5m", label: "Last 5 min" },
