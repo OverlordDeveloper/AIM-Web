@@ -39,10 +39,12 @@ const DefectHistory = ({
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [quickRange, setQuickRange] = useState<QuickRange>("all");
   const [selectedClassIds, setSelectedClassIds] = useState<Set<string>>(new Set());
+  const [minConfidence, setMinConfidence] = useState(0);
 
   // Reset class filter when model (classMap) changes
   useEffect(() => {
     setSelectedClassIds(new Set());
+    setMinConfidence(0);
   }, [classMap]);
 
   const toggleClass = (id: string) => {
