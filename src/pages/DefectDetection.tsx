@@ -82,16 +82,19 @@ const DefectDetection = () => {
           onAutoScrollToggle={() => setAutoScroll((p) => !p)}
         />
 
-        <main className="flex-1 flex flex-col overflow-hidden bg-background">
-          <DefectViewer
-            frame={selectedFrame}
-            classMap={classMap}
-            classStates={classStates}
-          />
+        <main className="flex-1 flex flex-row overflow-hidden bg-background">
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <DefectViewer
+              frame={selectedFrame}
+              classMap={classMap}
+              classStates={classStates}
+            />
+          </div>
           <DefectHistory
             frames={frames}
             selectedId={selectedFrame?.id ?? null}
             onSelect={setSelectedId}
+            classMap={classMap}
           />
         </main>
       </div>
