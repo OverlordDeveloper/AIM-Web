@@ -1,12 +1,16 @@
+import { Button } from "@/components/ui/button";
+import { Play } from "lucide-react";
 import type { DetectionClass, DetectionFrame } from "@/lib/defectMock";
 
 interface DefectViewerProps {
   frame: DetectionFrame | null;
   classMap: Record<string, DetectionClass>;
   classStates: Record<string, { enabled: boolean; threshold: number }>;
+  paused?: boolean;
+  onResumeLive?: () => void;
 }
 
-const DefectViewer = ({ frame, classMap, classStates }: DefectViewerProps) => {
+const DefectViewer = ({ frame, classMap, classStates, paused, onResumeLive }: DefectViewerProps) => {
   return (
     <div className="flex-1 min-h-0 flex items-center justify-center p-4 overflow-hidden">
       <div className="relative aspect-square h-full max-h-full rounded-md bg-card border border-border overflow-hidden flex flex-col">
@@ -55,6 +59,21 @@ const DefectViewer = ({ frame, classMap, classStates }: DefectViewerProps) => {
                   </div>
                 );
               })}
+              {paused && (
+                <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-background/90 border border-amber-500/60 text-amber-400 px-2 py-1 rounded-sm text-[10px] font-mono uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  Paused
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-5 px-1.5 text-[10px] text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"
+                    onClick={onResumeLive}
+                  >
+                    <Play className="w-3 h-3 mr-1" />
+                    Resume live
+                  </Button>
+                </div>
+              )}
             </>
           ) : (
             <span className="text-[10px] font-mono text-muted-foreground">

@@ -60,7 +60,7 @@ const PLACEHOLDER_IMAGES = [
 
 let nextId = 1;
 
-export function generateMockFrame(model: DetectionModel): DetectionFrame {
+export function generateMockFrame(model: DetectionModel, timestamp?: Date): DetectionFrame {
   const numBoxes = Math.floor(Math.random() * 5);
   const boxes: DetectionBox[] = Array.from({ length: numBoxes }, () => {
     const cls = model.classes[Math.floor(Math.random() * model.classes.length)];
@@ -80,8 +80,26 @@ export function generateMockFrame(model: DetectionModel): DetectionFrame {
 
   return {
     id: nextId++,
-    timestamp: new Date().toISOString(),
+    timestamp: (timestamp ?? new Date()).toISOString(),
     imageUrl: PLACEHOLDER_IMAGES[Math.floor(Math.random() * PLACEHOLDER_IMAGES.length)],
     boxes,
   };
+}
+
+/**
+ * Generate `count` backdated mock frames spaced `intervalMs` apart, ending now.
+ * Returned newest-first.
+ */
+export function generateMockHistory(
+  model: DetectionModel,
+  count: number,
+  intervalMs: number
+): DetectionFrame[] {
+  const now = Date.now();
+  const frames: DetectionFrame[] = [];
+  for (let i = 0; i < count; i++) {
+    const ts = new Date(now - i * intervalMs);
+    frames.push(generateMockFrame(model, ts));
+  }
+  return frames;
 }
