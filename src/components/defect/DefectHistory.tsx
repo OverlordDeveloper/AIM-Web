@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import type { DetectionClass, DetectionFrame } from "@/lib/defectMock";
 
@@ -38,10 +39,12 @@ const DefectHistory = ({
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [quickRange, setQuickRange] = useState<QuickRange>("all");
   const [selectedClassIds, setSelectedClassIds] = useState<Set<string>>(new Set());
+  const [minConfidence, setMinConfidence] = useState(0);
 
   // Reset class filter when model (classMap) changes
   useEffect(() => {
     setSelectedClassIds(new Set());
+    setMinConfidence(0);
   }, [classMap]);
 
   const toggleClass = (id: string) => {
@@ -55,7 +58,8 @@ const DefectHistory = ({
 
   const filtered = useMemo(() => {
     const now = Date.now();
-    return frames.filter((f) => {
+    const out: { frame: DetectionFrame; qualifying: typeof frames[number]["boxes"] }[] = [];
+    for (const f of frames) {
       const t = new Date(f.timestamp).getTime();
       if (date) {
         const d = new Date(f.timestamp);
@@ -64,7 +68,7 @@ const DefectHistory = ({
           d.getMonth() !== date.getMonth() ||
           d.getDate() !== date.getDate()
         )
-          return false;
+          continue;
       }
       const inRange = (() => {
         switch (quickRange) {
@@ -86,14 +90,19 @@ const DefectHistory = ({
             return true;
         }
       })();
-      if (!inRange) return false;
-      if (selectedClassIds.size > 0) {
-        const hit = f.boxes.some((b) => selectedClassIds.has(b.classId));
-        if (!hit) return false;
-      }
-      return true;
-    });
-  }, [frames, date, quickRange, selectedClassIds]);
+      if (!inRange) continue;
+      const qualifying = f.boxes.filter(
+        (b) =>
+          b.confidence >= minConfidence &&
+          (selectedClassIds.size === 0 || selectedClassIds.has(b.classId))
+      );
+      // If user has any active filter (class or confidence), require at least one qualifying box.
+      const hasActiveFilter = selectedClassIds.size > 0 || minConfidence > 0;
+      if (hasActiveFilter && qualifying.length === 0) continue;
+      out.push({ frame: f, qualifying });
+    }
+    return out;
+  }, [frames, date, quickRange, selectedClassIds, minConfidence]);
 
   const ranges: { id: QuickRange; label: string }[] = [
     { id: "5m", label: "Last 5 min" },
@@ -203,6 +212,41 @@ const DefectHistory = ({
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+                Min confidence
+              </span>
+              <span className="text-[10px] font-mono text-foreground tabular-nums">
+                {Math.round(minConfidence * 100)}%
+              </span>
+            </div>
+            <Slider
+              value={[Math.round(minConfidence * 100)]}
+              onValueChange={(v) => setMinConfidence((v[0] ?? 0) / 100)}
+              min={0}
+              max={100}
+              step={5}
+              className="py-1"
+            />
+            <div className="grid grid-cols-4 gap-1">
+              {[0, 50, 75, 90].map((p) => {
+                const active = Math.round(minConfidence * 100) === p;
+                return (
+                  <Button
+                    key={p}
+                    size="sm"
+                    variant={active ? "default" : "secondary"}
+                    className="h-6 text-[10px] px-1"
+                    onClick={() => setMinConfidence(p / 100)}
+                  >
+                    {p}%
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
             <span>Results</span>
             <Badge variant="secondary" className="text-[10px] font-mono">
@@ -213,9 +257,9 @@ const DefectHistory = ({
 
         <ScrollArea className="flex-1">
           <div className="flex flex-col">
-            {filtered.map((f) => {
+            {filtered.map(({ frame: f, qualifying }) => {
               const isSelected = f.id === selectedId;
-              const uniqueClassIds = Array.from(new Set(f.boxes.map((b) => b.classId)));
+              const uniqueClassIds = Array.from(new Set(qualifying.map((b) => b.classId)));
               return (
                 <button
                   key={f.id}
@@ -229,7 +273,7 @@ const DefectHistory = ({
                 >
                   <div className="flex items-center justify-between text-[11px] font-mono">
                     <span className="text-foreground">{formatDateTime(f.timestamp)}</span>
-                    <span className="text-muted-foreground">{f.boxes.length} det</span>
+                    <span className="text-muted-foreground">{qualifying.length} det</span>
                   </div>
                   <div className="mt-1 flex flex-wrap gap-1 min-h-[10px]">
                     {uniqueClassIds.map((cid) => {
