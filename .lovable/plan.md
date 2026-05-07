@@ -1,72 +1,48 @@
 ## Goal
+Replace the overlay drawer for History on the Defect Detection page with a layout that doesn't cover the image.
 
-Refresh the channel-strip aesthetic in the left "Defect Detection Settings" panel so the sliders + power toggles read as a cohesive industrial control surface, and move the class color identity from a vertical side bar into a bracketed colored tag like `[CRACK]` next to each row.
+## Approach: Inline right-side panel (collapsible)
 
-Scope: visual-only changes inside `src/components/defect/DefectSidebar.tsx`. No logic, props, or other files touched.
-
----
-
-## Changes
-
-### 1. Replace the left color bar with a bracketed colored tag
-
-Remove the 3px vertical color stripe on each row. Instead, render the class name as a monospace bracketed label, e.g. `[CRACK]`, where:
-
-- The brackets `[` and `]` and the class name are all colored with the class's HSL color (`hsl(${cls.color})`).
-- When the class is disabled, desaturate to `hsl(var(--muted-foreground))` (drop the class color entirely, since the row is already faded).
-- Keep the existing uppercase + tracking + font-mono styling.
-- This bracketed tag becomes the row's color identity — quiet, technical, no full-height stripe.
-
-The row container loses its colored left edge and just keeps the subtle `bg-secondary/40` hover treatment.
-
-### 2. New slider color scheme — calm "instrument" look
-
-Drop the off-white fill. Use a two-tone scheme that matches the rest of the panel:
-
-- **Track**: `bg-background` with `border border-border` (unchanged shape, slightly inset).
-- **Range fill (enabled)**: a muted teal/steel accent — `hsl(var(--sidebar-foreground) / 0.55)` (the existing teal-ish sidebar foreground token already in the palette). This gives the slider a distinct but understated color that isn't amber, isn't green, and ties into the teal side-panel direction noted in project memory.
-- **Range fill (disabled)**: `hsl(var(--muted-foreground) / 0.25)`.
-- **Thumb**: smaller fader-style rectangle, `bg-foreground` with `border-border`, drop shadow softened. No per-class color anywhere on the slider.
-- **Tick marks**: keep the 5 hairline ticks but lower contrast to `bg-border/40` so they recede.
-
-### 3. New on/off (Power) button scheme
-
-Replace the green-when-on / gray-when-off look with a clearer two-state toggle that matches the slider palette:
-
-- **Enabled (ON)**: filled chip — `bg-foreground/10 border border-foreground/30 text-foreground`, with a tiny LED dot in `--status-online` green to the left of the icon (inside the button) so green is reserved for the status indicator only, not the whole icon.
-- **Disabled (OFF)**: `bg-transparent border-border/60 text-muted-foreground`, no dot, hover lifts border to `border-foreground/40`.
-- Slightly larger hit target (`w-7 h-6`) so the LED + power icon fit cleanly side by side.
-
-This keeps the panel feeling monochrome with one accent (green LED) reserved strictly for "live" status, matching the Detection tile's green indicator.
-
-### 4. Threshold value pill
-
-Tighten to match the new palette: `bg-background/60 border-border text-foreground` when ON, `bg-transparent border-border/50 text-muted-foreground` when OFF. No color changes per-class.
-
-### 5. Row layout adjustment
-
-Since the left vertical bar is gone, the row content gets a small left padding (`pl-2.5`) and the top line becomes:
+Make History a regular column in the page layout, sitting to the right of the viewer — same pattern as the left `DefectSidebar`. The image area shrinks to fit the remaining space instead of being covered.
 
 ```text
-[CRACK]                          0.42  [⏻]
-━━━━━━━━━━━━━━●━━━━━━━━━━━━━━━━━
+┌─────────────────────────────────────────────────────────────┐
+│ TopNav                                                      │
+├──────────────┬────────────────────────────┬─────────────────┤
+│              │                            │                 │
+│  Controls    │     Detection Viewer       │    History      │
+│  Sidebar     │     (square, fits)         │    (filters +   │
+│  (left)      │                            │     list)       │
+│              │                            │                 │
+│              │                            │  [collapse →]   │
+└──────────────┴────────────────────────────┴─────────────────┘
 ```
 
-The bracketed tag replaces the previous separate uppercase name, so the name + color identity collapse into a single element.
+### Behavior
+- Default: History panel open (~320px wide), docked right, flush with the viewer.
+- Collapsed state: panel collapses to a thin vertical rail (~28px) showing a vertical "HISTORY" label + icon. Click rail to expand, click a chevron in the panel header to collapse.
+- Viewer always uses remaining space; the square image auto-scales — never overlapped.
+- State persists in component state (and optionally `localStorage` for the open/collapsed pref — small addition, easy to drop).
 
----
+### Changes
+1. **`src/pages/DefectDetection.tsx`**
+   - Remove the floating edge `Button` and the `DefectHistory` Sheet usage.
+   - Wrap viewer + history in a flex row inside `<main>`. Replace `historyOpen` with `historyCollapsed`.
+   - Render new `<DefectHistoryPanel>` as a sibling of `<DefectViewer>`.
 
-## Files to modify
+2. **New `src/components/defect/DefectHistoryPanel.tsx`** (extracted from `DefectHistory.tsx`)
+   - Same filters (date, quick range, categories, min confidence) and list, but rendered as a plain panel — no `Sheet`/overlay.
+   - Header with title + collapse chevron button.
+   - When collapsed: render only a 28px-wide rail with vertical "HISTORY" text and an expand chevron.
+   - Styled consistently with `DefectSidebar` (border-l, bg-card, mono labels).
 
-- `src/components/defect/DefectSidebar.tsx` — `ChannelSlider` (new range/thumb colors), per-row JSX (replace color bar with bracketed tag, restyle Power button + threshold pill).
+3. **`src/components/defect/DefectHistory.tsx`** — keep file but no longer used on this page (or delete; safe to remove since no other imports — will verify before removing).
 
-No changes to `index.css`, `tailwind.config.ts`, or any other file. All new colors come from existing tokens (`--foreground`, `--muted-foreground`, `--border`, `--sidebar-foreground`, `--status-online`).
+### Why inline over alternatives
+- Bottom strip would steal vertical room from a square viewer (height-constrained already).
+- Overlay (current) hides the very content the user is inspecting — the complaint.
+- Inline right column keeps everything visible at once and matches the existing left-sidebar pattern, so the layout reads as a single workspace.
 
----
-
-## Out of scope
-
-- Detection / Reject action tiles at the top (unchanged).
-- Auto-scroll button (unchanged).
-- Model selector, header, separators (unchanged).
-- Any logic, props, or non-visual behavior.
+### Out of scope
+- No changes to filters, mock data, or detection logic.
+- No restyling of the viewer or left sidebar.

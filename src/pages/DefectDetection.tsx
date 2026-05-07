@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { History } from "lucide-react";
 import TopNav from "@/components/TopNav";
 import DefectSidebar, { ClassState } from "@/components/defect/DefectSidebar";
 import DefectViewer from "@/components/defect/DefectViewer";
-import DefectHistory from "@/components/defect/DefectHistory";
-import { Button } from "@/components/ui/button";
+import DefectHistoryPanel from "@/components/defect/DefectHistoryPanel";
 import {
   MOCK_MODELS,
   generateMockFrame,
@@ -25,7 +23,7 @@ const DefectDetection = () => {
   const [frames, setFrames] = useState<DetectionFrame[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [viewerMode, setViewerMode] = useState<"live" | "paused">("live");
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyCollapsed, setHistoryCollapsed] = useState(false);
 
   const viewerModeRef = useRef(viewerMode);
   viewerModeRef.current = viewerMode;
@@ -112,33 +110,24 @@ const DefectDetection = () => {
           }
         />
 
-        <main className="flex-1 relative flex flex-col overflow-hidden bg-background">
-          <DefectViewer
-            frame={selectedFrame}
-            classMap={classMap}
-            classStates={classStates}
-            paused={viewerMode === "paused"}
-            onResumeLive={handleResumeLive}
-          />
+        <main className="flex-1 flex overflow-hidden bg-background">
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <DefectViewer
+              frame={selectedFrame}
+              classMap={classMap}
+              classStates={classStates}
+              paused={viewerMode === "paused"}
+              onResumeLive={handleResumeLive}
+            />
+          </div>
 
-          {/* History edge toggle */}
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setHistoryOpen(true)}
-            className="absolute top-1/2 -translate-y-1/2 right-0 h-auto py-3 px-1.5 rounded-l-md rounded-r-none border border-r-0 border-border text-[10px] font-mono uppercase tracking-wider flex flex-col items-center gap-1"
-          >
-            <History className="w-3.5 h-3.5" />
-            <span className="[writing-mode:vertical-rl] rotate-180">History</span>
-          </Button>
-
-          <DefectHistory
+          <DefectHistoryPanel
             frames={frames}
             selectedId={selectedFrame?.id ?? null}
             onSelect={handleSelectFrame}
             classMap={classMap}
-            open={historyOpen}
-            onOpenChange={setHistoryOpen}
+            collapsed={historyCollapsed}
+            onToggleCollapsed={() => setHistoryCollapsed((c) => !c)}
           />
         </main>
       </div>
