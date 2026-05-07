@@ -58,7 +58,8 @@ const DefectHistory = ({
 
   const filtered = useMemo(() => {
     const now = Date.now();
-    return frames.filter((f) => {
+    const out: { frame: DetectionFrame; qualifying: typeof frames[number]["boxes"] }[] = [];
+    for (const f of frames) {
       const t = new Date(f.timestamp).getTime();
       if (date) {
         const d = new Date(f.timestamp);
@@ -67,7 +68,7 @@ const DefectHistory = ({
           d.getMonth() !== date.getMonth() ||
           d.getDate() !== date.getDate()
         )
-          return false;
+          continue;
       }
       const inRange = (() => {
         switch (quickRange) {
@@ -89,14 +90,19 @@ const DefectHistory = ({
             return true;
         }
       })();
-      if (!inRange) return false;
-      if (selectedClassIds.size > 0) {
-        const hit = f.boxes.some((b) => selectedClassIds.has(b.classId));
-        if (!hit) return false;
-      }
-      return true;
-    });
-  }, [frames, date, quickRange, selectedClassIds]);
+      if (!inRange) continue;
+      const qualifying = f.boxes.filter(
+        (b) =>
+          b.confidence >= minConfidence &&
+          (selectedClassIds.size === 0 || selectedClassIds.has(b.classId))
+      );
+      // If user has any active filter (class or confidence), require at least one qualifying box.
+      const hasActiveFilter = selectedClassIds.size > 0 || minConfidence > 0;
+      if (hasActiveFilter && qualifying.length === 0) continue;
+      out.push({ frame: f, qualifying });
+    }
+    return out;
+  }, [frames, date, quickRange, selectedClassIds, minConfidence]);
 
   const ranges: { id: QuickRange; label: string }[] = [
     { id: "5m", label: "Last 5 min" },
