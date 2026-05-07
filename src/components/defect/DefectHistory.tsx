@@ -164,6 +164,45 @@ const DefectHistory = ({
             ))}
           </div>
 
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+                Categories
+              </span>
+              {selectedClassIds.size > 0 && (
+                <button
+                  onClick={() => setSelectedClassIds(new Set())}
+                  className="text-[10px] font-mono text-muted-foreground hover:text-foreground"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {Object.values(classMap).map((cls) => {
+                const active = selectedClassIds.has(cls.id);
+                return (
+                  <button
+                    key={cls.id}
+                    onClick={() => toggleClass(cls.id)}
+                    className={cn(
+                      "flex items-center gap-1 px-1.5 py-0.5 rounded-sm border text-[10px] font-mono transition-colors",
+                      active
+                        ? "bg-muted border-primary ring-1 ring-primary text-foreground"
+                        : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
+                    )}
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{ background: `hsl(${cls.color})` }}
+                    />
+                    {cls.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
             <span>Results</span>
             <Badge variant="secondary" className="text-[10px] font-mono">
