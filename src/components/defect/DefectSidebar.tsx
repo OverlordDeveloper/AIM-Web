@@ -256,12 +256,22 @@ const DefectSidebar = ({
             return (
               <div
                 key={cls.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => onClassToggle(cls.id, !enabled)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onClassToggle(cls.id, !enabled);
+                  }
+                }}
+                aria-pressed={enabled}
                 className={cn(
-                  "relative flex border-b border-border transition-colors",
-                  enabled ? "bg-secondary/40 hover:bg-secondary/70" : "bg-transparent"
+                  "relative flex border-b border-border transition-colors cursor-pointer select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                  enabled ? "bg-secondary/40 hover:bg-secondary/70" : "bg-transparent hover:bg-secondary/30"
                 )}
               >
-                <div className={cn("flex-1 pl-2.5 pr-2 py-2 space-y-1.5", !enabled && "opacity-60")}>
+                <div className={cn("flex-1 pl-2.5 pr-2 py-2 space-y-1.5", !enabled && "opacity-50")}>
                   <div className="flex items-center gap-2">
                     <span
                       className="text-[11px] font-mono font-semibold uppercase tracking-wider flex-1 truncate"
@@ -279,26 +289,18 @@ const DefectSidebar = ({
                     >
                       {enabled ? state.threshold.toFixed(2) : "OFF"}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => onClassToggle(cls.id, !enabled)}
-                      className={cn(
-                        "flex items-center justify-center gap-1 w-7 h-6 rounded-sm border transition-colors",
-                        enabled
-                          ? "bg-foreground/10 border-foreground/30 text-foreground"
-                          : "bg-transparent border-border/60 text-muted-foreground hover:border-foreground/40"
-                      )}
-                      aria-label={enabled ? "Disable class" : "Enable class"}
-                    >
-                      <Power className="w-3 h-3" />
-                    </button>
                   </div>
-                  <ChannelSlider
-                    value={state.threshold}
-                    color={cls.color}
-                    disabled={!enabled}
-                    onChange={(v) => onThresholdChange(cls.id, v)}
-                  />
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  >
+                    <ChannelSlider
+                      value={state.threshold}
+                      color={cls.color}
+                      disabled={!enabled}
+                      onChange={(v) => onThresholdChange(cls.id, v)}
+                    />
+                  </div>
                 </div>
               </div>
             );
