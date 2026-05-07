@@ -240,12 +240,6 @@ const DefectSidebar = ({
               : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:border-border"
           )}
         >
-          <span
-            className={cn(
-              "w-1.5 h-1.5 rounded-full",
-              autoScroll ? "bg-success led-pulse" : "bg-muted-foreground/40"
-            )}
-          />
           <MoveDown className="w-3 h-3" />
           Auto
         </button>
@@ -296,9 +290,6 @@ const DefectSidebar = ({
                       )}
                       aria-label={enabled ? "Disable class" : "Enable class"}
                     >
-                      {enabled && (
-                        <span className="w-1 h-1 rounded-full bg-[hsl(var(--status-online))] led-pulse" />
-                      )}
                       <Power className="w-3 h-3" />
                     </button>
                   </div>
