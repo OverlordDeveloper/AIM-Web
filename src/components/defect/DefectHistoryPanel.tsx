@@ -109,21 +109,17 @@ const DefectHistoryPanel = ({
 
   if (collapsed) {
     return (
-      <div className="w-7 shrink-0 border-l border-border bg-card flex flex-col items-center gap-2 py-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleCollapsed}
-          className="h-6 w-6 text-muted-foreground hover:text-foreground"
-          aria-label="Expand history panel"
-        >
-          <ChevronLeft className="w-3.5 h-3.5" />
-        </Button>
+      <button
+        onClick={onToggleCollapsed}
+        className="w-7 shrink-0 border-l border-border bg-card hover:bg-secondary/60 flex flex-col items-center justify-start gap-2 py-2 transition-colors"
+        aria-label="Expand history panel"
+      >
+        <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
         <HistoryIcon className="w-3.5 h-3.5 text-muted-foreground" />
         <span className="[writing-mode:vertical-rl] rotate-180 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
           History
         </span>
-      </div>
+      </button>
     );
   }
 
