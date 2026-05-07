@@ -267,25 +267,20 @@ const DefectSidebar = ({
                   enabled ? "bg-secondary/40 hover:bg-secondary/70" : "bg-transparent"
                 )}
               >
-                {/* Color bar */}
-                <span
-                  className="w-[3px] shrink-0 self-stretch"
-                  style={{
-                    background: `hsl(${cls.color})`,
-                    opacity: enabled ? 1 : 0.3,
-                  }}
-                />
-                <div className={cn("flex-1 px-2.5 py-2 space-y-1.5", !enabled && "opacity-50")}>
+                <div className={cn("flex-1 pl-2.5 pr-2 py-2 space-y-1.5", !enabled && "opacity-60")}>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-foreground flex-1 truncate">
-                      {cls.name}
+                    <span
+                      className="text-[11px] font-mono font-semibold uppercase tracking-wider flex-1 truncate"
+                      style={{ color: enabled ? `hsl(${cls.color})` : "hsl(var(--muted-foreground))" }}
+                    >
+                      [{cls.name}]
                     </span>
                     <span
                       className={cn(
                         "px-1.5 py-0.5 rounded-sm border text-[10px] font-mono tabular-nums leading-none",
                         enabled
-                          ? "bg-background border-border text-foreground"
-                          : "bg-background/40 border-border text-muted-foreground"
+                          ? "bg-background/60 border-border text-foreground"
+                          : "bg-transparent border-border/50 text-muted-foreground"
                       )}
                     >
                       {enabled ? state.threshold.toFixed(2) : "OFF"}
@@ -294,13 +289,16 @@ const DefectSidebar = ({
                       type="button"
                       onClick={() => onClassToggle(cls.id, !enabled)}
                       className={cn(
-                        "flex items-center justify-center w-6 h-6 rounded-sm border transition-colors",
+                        "flex items-center justify-center gap-1 w-7 h-6 rounded-sm border transition-colors",
                         enabled
-                          ? "border-border bg-background/60 text-success"
-                          : "border-border/50 bg-transparent text-muted-foreground hover:border-foreground/40"
+                          ? "bg-foreground/10 border-foreground/30 text-foreground"
+                          : "bg-transparent border-border/60 text-muted-foreground hover:border-foreground/40"
                       )}
                       aria-label={enabled ? "Disable class" : "Enable class"}
                     >
+                      {enabled && (
+                        <span className="w-1 h-1 rounded-full bg-[hsl(var(--status-online))] led-pulse" />
+                      )}
                       <Power className="w-3 h-3" />
                     </button>
                   </div>
