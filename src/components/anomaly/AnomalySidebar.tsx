@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { X, RotateCcw, Hammer, Play, Brain, Search } from "lucide-react";
+import { X, RotateCcw, Hammer, Play, Brain, Search, ScanSearch, Ban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AnomalyRecord } from "@/pages/AnomalyDetection";
 
@@ -65,6 +65,80 @@ const formatRecordTime = (timestamp: string) => {
     second: "2-digit",
   });
 };
+
+interface ActionTileProps {
+  active: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  activeStatus: string;
+  inactiveStatus: string;
+  tone: "success" | "destructive";
+}
+
+const ActionTile = ({
+  active,
+  disabled,
+  onClick,
+  icon,
+  label,
+  activeStatus,
+  inactiveStatus,
+  tone,
+}: ActionTileProps) => {
+  const toneCls =
+    tone === "success"
+      ? {
+          on: "bg-success/15 border-success text-success",
+          dot: "bg-success text-success",
+        }
+      : {
+          on: "bg-destructive/15 border-destructive text-destructive ring-1 ring-inset ring-destructive/30",
+          dot: "bg-destructive text-destructive",
+        };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "group relative flex flex-col items-start gap-1 px-2 py-2 rounded-sm border transition-colors text-left min-h-[64px]",
+        active
+          ? toneCls.on
+          : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-foreground/40",
+        disabled && "opacity-50 cursor-not-allowed hover:text-muted-foreground hover:border-border"
+      )}
+    >
+      <div className="flex items-center justify-between w-full">
+        <div
+          className={cn(
+            "flex items-center justify-center w-6 h-6 rounded-sm",
+            active ? "bg-background/40" : "bg-background/30"
+          )}
+        >
+          {icon}
+        </div>
+        <span
+          className={cn(
+            "w-1.5 h-1.5 rounded-full",
+            active ? cn(toneCls.dot, "led-pulse") : "bg-muted-foreground/40"
+          )}
+        />
+      </div>
+      <div className="flex flex-col leading-tight">
+        <span className="text-[11px] font-mono font-semibold uppercase tracking-wider">
+          {label}
+        </span>
+        <span className="text-[9px] font-mono uppercase tracking-wider opacity-80">
+          {active ? activeStatus : inactiveStatus}
+        </span>
+      </div>
+    </button>
+  );
+};
+
 
 const AnomalySidebar = ({
   mode,
@@ -312,36 +386,27 @@ const DetectPanel = ({
 
   return (
     <>
-      <div className="flex items-center gap-4">
-        <label
-          className={cn(
-            "flex items-center gap-1.5 text-[11px]",
-            !canEnable && "opacity-50"
-          )}
-        >
-          <Checkbox
-            checked={anomalyDetectEnabled}
-            onCheckedChange={(v) => onAnomalyDetectChange(!!v)}
-            disabled={!canEnable}
-            className="w-3.5 h-3.5"
-          />
-          <span className="text-foreground">Enabled</span>
-        </label>
-
-        <label
-          className={cn(
-            "flex items-center gap-1.5 text-[11px]",
-            !canEnable && "opacity-50"
-          )}
-        >
-          <Checkbox
-            checked={rejectEnabled}
-            onCheckedChange={(v) => onRejectChange(!!v)}
-            disabled={!canEnable}
-            className="w-3.5 h-3.5"
-          />
-          <span className="text-foreground">Reject</span>
-        </label>
+      <div className="grid grid-cols-2 gap-1.5">
+        <ActionTile
+          active={anomalyDetectEnabled}
+          disabled={!canEnable}
+          onClick={() => onAnomalyDetectChange(!anomalyDetectEnabled)}
+          icon={<ScanSearch className="w-4 h-4" />}
+          label="Detection"
+          activeStatus="● Active"
+          inactiveStatus="○ Standby"
+          tone="success"
+        />
+        <ActionTile
+          active={rejectEnabled}
+          disabled={!canEnable}
+          onClick={() => onRejectChange(!rejectEnabled)}
+          icon={<Ban className="w-4 h-4" />}
+          label="Reject"
+          activeStatus="● Armed"
+          inactiveStatus="○ Disarmed"
+          tone="destructive"
+        />
       </div>
 
       <Separator />
