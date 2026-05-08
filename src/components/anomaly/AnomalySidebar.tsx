@@ -66,6 +66,80 @@ const formatRecordTime = (timestamp: string) => {
   });
 };
 
+interface ActionTileProps {
+  active: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  activeStatus: string;
+  inactiveStatus: string;
+  tone: "success" | "destructive";
+}
+
+const ActionTile = ({
+  active,
+  disabled,
+  onClick,
+  icon,
+  label,
+  activeStatus,
+  inactiveStatus,
+  tone,
+}: ActionTileProps) => {
+  const toneCls =
+    tone === "success"
+      ? {
+          on: "bg-success/15 border-success text-success",
+          dot: "bg-success text-success",
+        }
+      : {
+          on: "bg-destructive/15 border-destructive text-destructive ring-1 ring-inset ring-destructive/30",
+          dot: "bg-destructive text-destructive",
+        };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "group relative flex flex-col items-start gap-1 px-2 py-2 rounded-sm border transition-colors text-left min-h-[64px]",
+        active
+          ? toneCls.on
+          : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-foreground/40",
+        disabled && "opacity-50 cursor-not-allowed hover:text-muted-foreground hover:border-border"
+      )}
+    >
+      <div className="flex items-center justify-between w-full">
+        <div
+          className={cn(
+            "flex items-center justify-center w-6 h-6 rounded-sm",
+            active ? "bg-background/40" : "bg-background/30"
+          )}
+        >
+          {icon}
+        </div>
+        <span
+          className={cn(
+            "w-1.5 h-1.5 rounded-full",
+            active ? cn(toneCls.dot, "led-pulse") : "bg-muted-foreground/40"
+          )}
+        />
+      </div>
+      <div className="flex flex-col leading-tight">
+        <span className="text-[11px] font-mono font-semibold uppercase tracking-wider">
+          {label}
+        </span>
+        <span className="text-[9px] font-mono uppercase tracking-wider opacity-80">
+          {active ? activeStatus : inactiveStatus}
+        </span>
+      </div>
+    </button>
+  );
+};
+
+
 const AnomalySidebar = ({
   mode,
   onModeChange,
