@@ -386,36 +386,27 @@ const DetectPanel = ({
 
   return (
     <>
-      <div className="flex items-center gap-4">
-        <label
-          className={cn(
-            "flex items-center gap-1.5 text-[11px]",
-            !canEnable && "opacity-50"
-          )}
-        >
-          <Checkbox
-            checked={anomalyDetectEnabled}
-            onCheckedChange={(v) => onAnomalyDetectChange(!!v)}
-            disabled={!canEnable}
-            className="w-3.5 h-3.5"
-          />
-          <span className="text-foreground">Enabled</span>
-        </label>
-
-        <label
-          className={cn(
-            "flex items-center gap-1.5 text-[11px]",
-            !canEnable && "opacity-50"
-          )}
-        >
-          <Checkbox
-            checked={rejectEnabled}
-            onCheckedChange={(v) => onRejectChange(!!v)}
-            disabled={!canEnable}
-            className="w-3.5 h-3.5"
-          />
-          <span className="text-foreground">Reject</span>
-        </label>
+      <div className="grid grid-cols-2 gap-1.5">
+        <ActionTile
+          active={anomalyDetectEnabled}
+          disabled={!canEnable}
+          onClick={() => onAnomalyDetectChange(!anomalyDetectEnabled)}
+          icon={<ScanSearch className="w-4 h-4" />}
+          label="Detection"
+          activeStatus="● Active"
+          inactiveStatus="○ Standby"
+          tone="success"
+        />
+        <ActionTile
+          active={rejectEnabled}
+          disabled={!canEnable}
+          onClick={() => onRejectChange(!rejectEnabled)}
+          icon={<Ban className="w-4 h-4" />}
+          label="Reject"
+          activeStatus="● Armed"
+          inactiveStatus="○ Disarmed"
+          tone="destructive"
+        />
       </div>
 
       <Separator />
