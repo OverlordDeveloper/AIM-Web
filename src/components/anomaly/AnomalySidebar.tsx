@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { X, RotateCcw, Hammer, Play, Brain, Search } from "lucide-react";
+import { X, RotateCcw, Hammer, Play, Brain, Search, ScanSearch, Ban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AnomalyRecord } from "@/pages/AnomalyDetection";
 
