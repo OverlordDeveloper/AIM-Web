@@ -249,6 +249,15 @@ const DefectHistoryPanel = ({
           )}
         </div>
       </ScrollArea>
+
+      <div className="px-3 py-2 border-t border-border">
+        <Link
+          to="/history"
+          className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Older records → History
+        </Link>
+      </div>
     </aside>
   );
 };
