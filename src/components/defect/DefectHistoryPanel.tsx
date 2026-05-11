@@ -109,6 +109,27 @@ const DefectHistoryPanel = ({
       </div>
 
       <div className="px-3 py-2 space-y-2 border-b border-border">
+        <button
+          onClick={() => setFiltersOpen((o) => !o)}
+          className="w-full flex items-center justify-between text-[10px] font-mono uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+          aria-expanded={filtersOpen}
+        >
+          <span className="flex items-center gap-1.5">
+            <SlidersHorizontal className="w-3 h-3" />
+            Filters
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Badge variant="secondary" className="text-[10px] font-mono h-4 px-1.5">
+              {filtered.length}
+            </Badge>
+            <ChevronDown
+              className={cn("w-3.5 h-3.5 transition-transform", !filtersOpen && "-rotate-90")}
+            />
+          </span>
+        </button>
+
+        {filtersOpen && (
+          <div className="space-y-2 pt-1">
         <div className="grid grid-cols-3 gap-1">
           {ranges.map((r) => (
             <Button
