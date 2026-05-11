@@ -35,6 +35,7 @@ const DefectHistoryPanel = ({
   const [quickRange, setQuickRange] = useState<QuickRange>("1h");
   const [selectedClassIds, setSelectedClassIds] = useState<Set<string>>(new Set());
   const [minConfidence, setMinConfidence] = useState(0);
+  const [filtersOpen, setFiltersOpen] = useState(true);
 
   useEffect(() => {
     setSelectedClassIds(new Set());
