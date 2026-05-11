@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, ChevronLeft, History as HistoryIcon } from "lucide-react";
+import { ChevronRight, ChevronLeft, ChevronDown, History as HistoryIcon, SlidersHorizontal } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
