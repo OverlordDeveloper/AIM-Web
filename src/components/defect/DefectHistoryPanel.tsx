@@ -1,16 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { format } from "date-fns";
-import { CalendarIcon, ChevronRight, ChevronLeft, History as HistoryIcon, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ChevronRight, ChevronLeft, History as HistoryIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import type { DetectionClass, DetectionFrame } from "@/lib/defectMock";
 
-type QuickRange = "5m" | "1h" | "today" | "all";
+type QuickRange = "1h" | "4h" | "8h";
 
 interface DefectHistoryPanelProps {
   frames: DetectionFrame[];
