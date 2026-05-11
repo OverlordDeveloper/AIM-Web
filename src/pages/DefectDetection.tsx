@@ -11,9 +11,9 @@ import {
   type DetectionClass,
 } from "@/lib/defectMock";
 
-const MAX_FRAMES = 2000;
-const HISTORY_HOURS = 6;
+const HISTORY_HOURS = 8;
 const HISTORY_INTERVAL_MS = 30 * 1000;
+const HISTORY_WINDOW_MS = HISTORY_HOURS * 60 * 60 * 1000;
 
 const DefectDetection = () => {
   const [selectedModelId, setSelectedModelId] = useState(MOCK_MODELS[0].id);
@@ -56,11 +56,23 @@ const DefectDetection = () => {
     if (!detectEnabled || !model) return;
     const interval = setInterval(() => {
       const frame = generateMockFrame(model);
-      setFrames((prev) => [frame, ...prev].slice(0, MAX_FRAMES));
+      setFrames((prev) => {
+        const cutoff = Date.now() - HISTORY_WINDOW_MS;
+        return [frame, ...prev].filter((f) => new Date(f.timestamp).getTime() >= cutoff);
+      });
       if (viewerModeRef.current === "live") setSelectedId(frame.id);
     }, 1500);
     return () => clearInterval(interval);
   }, [detectEnabled, model]);
+
+  // Periodic prune so stale frames fall off when idle
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const cutoff = Date.now() - HISTORY_WINDOW_MS;
+      setFrames((prev) => prev.filter((f) => new Date(f.timestamp).getTime() >= cutoff));
+    }, 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const classMap = useMemo(() => {
     const map: Record<string, DetectionClass> = {};
