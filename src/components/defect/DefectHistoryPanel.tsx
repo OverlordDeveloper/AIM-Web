@@ -52,39 +52,12 @@ const DefectHistoryPanel = ({
 
   const filtered = useMemo(() => {
     const now = Date.now();
+    const windowMs =
+      quickRange === "1h" ? 60 * 60 * 1000 : quickRange === "4h" ? 4 * 60 * 60 * 1000 : 8 * 60 * 60 * 1000;
     const out: { frame: DetectionFrame; qualifying: typeof frames[number]["boxes"] }[] = [];
     for (const f of frames) {
       const t = new Date(f.timestamp).getTime();
-      if (date) {
-        const d = new Date(f.timestamp);
-        if (
-          d.getFullYear() !== date.getFullYear() ||
-          d.getMonth() !== date.getMonth() ||
-          d.getDate() !== date.getDate()
-        )
-          continue;
-      }
-      const inRange = (() => {
-        switch (quickRange) {
-          case "5m":
-            return now - t <= 5 * 60 * 1000;
-          case "1h":
-            return now - t <= 60 * 60 * 1000;
-          case "today": {
-            const d = new Date(f.timestamp);
-            const today = new Date();
-            return (
-              d.getFullYear() === today.getFullYear() &&
-              d.getMonth() === today.getMonth() &&
-              d.getDate() === today.getDate()
-            );
-          }
-          case "all":
-          default:
-            return true;
-        }
-      })();
-      if (!inRange) continue;
+      if (now - t > windowMs) continue;
       const qualifying = f.boxes.filter(
         (b) =>
           b.confidence >= minConfidence &&
@@ -95,13 +68,12 @@ const DefectHistoryPanel = ({
       out.push({ frame: f, qualifying });
     }
     return out;
-  }, [frames, date, quickRange, selectedClassIds, minConfidence]);
+  }, [frames, quickRange, selectedClassIds, minConfidence]);
 
   const ranges: { id: QuickRange; label: string }[] = [
-    { id: "5m", label: "Last 5 min" },
     { id: "1h", label: "Last 1 h" },
-    { id: "today", label: "Today" },
-    { id: "all", label: "All" },
+    { id: "4h", label: "Last 4 h" },
+    { id: "8h", label: "Last 8 h" },
   ];
 
   if (collapsed) {
@@ -136,42 +108,7 @@ const DefectHistoryPanel = ({
       </div>
 
       <div className="px-3 py-2 space-y-2 border-b border-border">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                "h-8 w-full justify-start text-[11px] font-mono bg-secondary border-border",
-                !date && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="w-3.5 h-3.5 mr-2" />
-              {date ? format(date, "PPP") : "Any date"}
-              {date && (
-                <X
-                  className="w-3 h-3 ml-auto opacity-60 hover:opacity-100"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setDate(undefined);
-                  }}
-                />
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              initialFocus
-              className={cn("p-3 pointer-events-auto")}
-            />
-          </PopoverContent>
-        </Popover>
-
-        <div className="grid grid-cols-4 gap-1">
+        <div className="grid grid-cols-3 gap-1">
           {ranges.map((r) => (
             <Button
               key={r.id}
