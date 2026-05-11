@@ -218,12 +218,8 @@ const DefectHistoryPanel = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
-          <span>Results</span>
-          <Badge variant="secondary" className="text-[10px] font-mono">
-            {filtered.length}
-          </Badge>
-        </div>
+          </div>
+        )}
       </div>
 
       <ScrollArea className="flex-1">
