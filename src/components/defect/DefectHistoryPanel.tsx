@@ -32,8 +32,7 @@ const DefectHistoryPanel = ({
   collapsed,
   onToggleCollapsed,
 }: DefectHistoryPanelProps) => {
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [quickRange, setQuickRange] = useState<QuickRange>("all");
+  const [quickRange, setQuickRange] = useState<QuickRange>("1h");
   const [selectedClassIds, setSelectedClassIds] = useState<Set<string>>(new Set());
   const [minConfidence, setMinConfidence] = useState(0);
 
