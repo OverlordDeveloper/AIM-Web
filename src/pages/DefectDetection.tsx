@@ -11,9 +11,9 @@ import {
   type DetectionClass,
 } from "@/lib/defectMock";
 
-const MAX_FRAMES = 2000;
-const HISTORY_HOURS = 6;
+const HISTORY_HOURS = 8;
 const HISTORY_INTERVAL_MS = 30 * 1000;
+const HISTORY_WINDOW_MS = HISTORY_HOURS * 60 * 60 * 1000;
 
 const DefectDetection = () => {
   const [selectedModelId, setSelectedModelId] = useState(MOCK_MODELS[0].id);
