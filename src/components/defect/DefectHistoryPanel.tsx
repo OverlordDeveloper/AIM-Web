@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, ChevronLeft, History as HistoryIcon } from "lucide-react";
+import { ChevronRight, ChevronLeft, ChevronDown, History as HistoryIcon, SlidersHorizontal } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,7 @@ const DefectHistoryPanel = ({
   const [quickRange, setQuickRange] = useState<QuickRange>("1h");
   const [selectedClassIds, setSelectedClassIds] = useState<Set<string>>(new Set());
   const [minConfidence, setMinConfidence] = useState(0);
+  const [filtersOpen, setFiltersOpen] = useState(true);
 
   useEffect(() => {
     setSelectedClassIds(new Set());
@@ -108,6 +109,27 @@ const DefectHistoryPanel = ({
       </div>
 
       <div className="px-3 py-2 space-y-2 border-b border-border">
+        <button
+          onClick={() => setFiltersOpen((o) => !o)}
+          className="w-full flex items-center justify-between text-[10px] font-mono uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+          aria-expanded={filtersOpen}
+        >
+          <span className="flex items-center gap-1.5">
+            <SlidersHorizontal className="w-3 h-3" />
+            Filters
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Badge variant="secondary" className="text-[10px] font-mono h-4 px-1.5">
+              {filtered.length}
+            </Badge>
+            <ChevronDown
+              className={cn("w-3.5 h-3.5 transition-transform", !filtersOpen && "-rotate-90")}
+            />
+          </span>
+        </button>
+
+        {filtersOpen && (
+          <div className="space-y-2 pt-1">
         <div className="grid grid-cols-3 gap-1">
           {ranges.map((r) => (
             <Button
@@ -196,12 +218,8 @@ const DefectHistoryPanel = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
-          <span>Results</span>
-          <Badge variant="secondary" className="text-[10px] font-mono">
-            {filtered.length}
-          </Badge>
-        </div>
+          </div>
+        )}
       </div>
 
       <ScrollArea className="flex-1">
