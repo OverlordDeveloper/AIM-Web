@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import TopNav from "@/components/TopNav";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { Badge } from "@/components/ui/badge";
@@ -33,12 +33,33 @@ const API_BASE = "http://192.168.1.156:18080";
 const RESULTS_PER_PAGE = 100;
 const MAX_RECORDS = 1000;
 
+const CLASS_COLORS = [
+  "#ef4444",
+  "#f97316",
+  "#eab308",
+  "#22c55e",
+  "#06b6d4",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#14b8a6",
+  "#a855f7",
+  "#84cc16",
+  "#f43f5e",
+];
+
 const TIME_OPTIONS = [
   "Last 30 minutes",
   "Last 1 hour",
   "Last 4 hours",
   "Last 8 hours",
 ];
+
+type YoloDetection = {
+  bbox: [number, number, number, number];
+  label: string;
+  score: number;
+};
 
 export interface HistoryRecord {
   id: number;
@@ -48,12 +69,62 @@ export interface HistoryRecord {
   yoloReject: boolean;
   imageUrl?: string;
   overlayUrl?: string;
+  yoloDetections?: YoloDetection[] | string;
 }
 
 type HistoryBackendState = {
   total?: number;
   newestTimestamp?: string;
   oldestTimestamp?: string;
+};
+
+const getLabelColor = (label: string) => {
+  let hash = 0;
+
+  for (let i = 0; i < label.length; i++) {
+    hash = label.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  return CLASS_COLORS[Math.abs(hash) % CLASS_COLORS.length];
+};
+
+const normalizeDetections = (
+  detections?: YoloDetection[] | string | null
+): YoloDetection[] => {
+  if (!detections) return [];
+
+  let raw: unknown = detections;
+
+  if (typeof detections === "string") {
+    try {
+      raw = JSON.parse(detections);
+    } catch {
+      return [];
+    }
+  }
+
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .map((d) => {
+      const item = d as any;
+
+      if (!Array.isArray(item.bbox) || item.bbox.length < 4) {
+        return null;
+      }
+
+      return {
+        label: String(item.label ?? "defect"),
+        score: Number(item.score ?? 0),
+        bbox: [
+          Number(item.bbox[0]),
+          Number(item.bbox[1]),
+          Number(item.bbox[2]),
+          Number(item.bbox[3]),
+        ] as [number, number, number, number],
+      };
+    })
+    .filter(Boolean) as YoloDetection[];
 };
 
 const timeSelectionToMinutes = (value: string) => {
@@ -80,8 +151,10 @@ const parseTimestamp = (value?: string | null) => {
   const m = value.match(
     /^(\d{2})\/(\d{2})\/(\d{4})[ ,T]+(\d{2}):(\d{2})(?::(\d{2}))?$/
   );
+
   if (m) {
     const [, dd, mm, yyyy, hh, min, ss] = m;
+
     return new Date(
       Number(yyyy),
       Number(mm) - 1,
@@ -114,9 +187,12 @@ const sameDay = (a: Date, b: Date) =>
 const History = () => {
   const { connected, lastMessage, sendJson } = useWebSocket(WS_URL);
 
+  const imageRef = useRef<HTMLImageElement | null>(null);
+
   const [historyState, setHistoryState] = useState<HistoryBackendState | null>(
     null
   );
+
   const [records, setRecords] = useState<HistoryRecord[]>([]);
   const [selectedRecordId, setSelectedRecordId] = useState<number | null>(null);
 
@@ -135,6 +211,7 @@ const History = () => {
 
   const [manualTimeEnabled, setManualTimeEnabled] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -157,6 +234,7 @@ const History = () => {
       } else {
         setSelectedRecordId(null);
       }
+
       return;
     }
 
@@ -199,8 +277,10 @@ const History = () => {
 
   const selectedDateTime = useMemo(() => {
     if (!selectedDate) return null;
+
     const dt = new Date(selectedDate);
     dt.setHours(selectedHour, selectedMinute, 0, 0);
+
     return dt;
   }, [selectedDate, selectedHour, selectedMinute]);
 
@@ -217,6 +297,7 @@ const History = () => {
   const filteredResults = useMemo(() => {
     const selectedMinutes = timeSelectionToMinutes(timeSelection);
     const anchorTime = referenceTime;
+
     const fromTime = new Date(
       anchorTime.getTime() - selectedMinutes * 60 * 1000
     );
@@ -284,6 +365,11 @@ const History = () => {
     [filteredResults, selectedRecordId]
   );
 
+  const selectedDetections = useMemo(
+    () => normalizeDetections(selectedRecord?.yoloDetections),
+    [selectedRecord]
+  );
+
   const toApiUrl = (url?: string | null) => {
     if (!url) return null;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
@@ -297,6 +383,19 @@ const History = () => {
   const selectedOverlayUrl = selectedRecord
     ? toApiUrl(selectedRecord.overlayUrl)
     : null;
+
+  const canToggleHeatmap =
+    !!selectedRecord?.anomalyReject && !!selectedOverlayUrl;
+
+  const shownImageUrl =
+    displayMode === "overlay" && canToggleHeatmap
+      ? selectedOverlayUrl
+      : selectedImageUrl;
+
+  const showBoxOverlay =
+    selectedDetections.length > 0 &&
+    imageSize.width > 0 &&
+    imageSize.height > 0;
 
   const sendRefresh = useCallback(() => {
     sendJson({
@@ -350,16 +449,17 @@ const History = () => {
     : "Live time";
 
   const handleSelectRecord = useCallback(
-  (record: HistoryRecord) => {
-    setSelectedRecordId(record.id);
-    setDisplayMode("image");
+    (record: HistoryRecord) => {
+      setSelectedRecordId(record.id);
+      setDisplayMode("image");
+      setImageSize({ width: 0, height: 0 });
 
-    sendJson({
-      type: "history.image.request",
-      id: record.id,
-    });
-  },
-  [sendJson]
+      sendJson({
+        type: "history.image.request",
+        id: record.id,
+      });
+    },
+    [sendJson]
   );
 
   return (
@@ -415,7 +515,7 @@ const History = () => {
                   </Button>
                 </PopoverTrigger>
 
-                <PopoverContent className="w-48 p-3" align="start">
+                <PopoverContent className="w-56 p-3" align="start">
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <Checkbox
@@ -432,7 +532,9 @@ const History = () => {
                         checked={filterYolo}
                         onCheckedChange={(v) => setFilterYolo(!!v)}
                       />
-                      <span className="text-[11px] text-foreground">YOLO</span>
+                      <span className="text-[11px] text-foreground">
+                        Defect Detection
+                      </span>
                     </label>
                   </div>
                 </PopoverContent>
@@ -448,6 +550,7 @@ const History = () => {
                 <SelectTrigger className="h-8 text-sm font-medium flex-1">
                   <SelectValue />
                 </SelectTrigger>
+
                 <SelectContent>
                   {TIME_OPTIONS.map((opt, i) => (
                     <SelectItem key={i} value={String(i)} className="text-sm">
@@ -480,11 +583,6 @@ const History = () => {
                       manualTimeEnabled &&
                         "border-primary text-primary shadow-[0_0_12px_hsl(var(--primary)/0.65)] bg-primary/10"
                     )}
-                    title={
-                      manualTimeEnabled
-                        ? "Disable selected time and use live time"
-                        : "Enable selected time"
-                    }
                   >
                     <Clock className="w-3 h-3" />
                   </Button>
@@ -518,6 +616,7 @@ const History = () => {
                       <SelectTrigger className="h-8 w-[70px] text-sm font-mono font-semibold">
                         <SelectValue />
                       </SelectTrigger>
+
                       <SelectContent>
                         {Array.from({ length: 24 }, (_, i) => (
                           <SelectItem
@@ -545,6 +644,7 @@ const History = () => {
                       <SelectTrigger className="h-8 w-[70px] text-sm font-mono font-semibold">
                         <SelectValue />
                       </SelectTrigger>
+
                       <SelectContent>
                         {Array.from({ length: 60 }, (_, i) => (
                           <SelectItem
@@ -621,7 +721,7 @@ const History = () => {
                         variant="secondary"
                         className="h-5 px-1.5 text-[10px] font-bold bg-[hsl(35,90%,60%)]/15 text-[hsl(35,90%,60%)] border-0"
                       >
-                        yolo
+                        Defect Detection
                       </Badge>
                     )}
                   </div>
@@ -663,40 +763,96 @@ const History = () => {
           {selectedRecord ? (
             <>
               <button
-                onClick={() =>
-                  setDisplayMode((m) => (m === "image" ? "overlay" : "image"))
-                }
-                className="relative rounded border border-border bg-card overflow-hidden cursor-pointer hover:border-primary/40 transition-colors aspect-square"
+                onClick={() => {
+                  if (!canToggleHeatmap) return;
+                  setDisplayMode((m) => (m === "image" ? "overlay" : "image"));
+                }}
+                className={cn(
+                  "relative rounded border border-border bg-card overflow-hidden aspect-square",
+                  canToggleHeatmap
+                    ? "cursor-pointer hover:border-primary/40 transition-colors"
+                    : "cursor-default"
+                )}
                 style={{
                   width: "min(calc(100% - 2rem), calc(100vh - 10rem))",
                   height: "min(calc(100% - 2rem), calc(100vh - 10rem))",
                 }}
-                title="Click to toggle overlay"
+                title={
+                  canToggleHeatmap
+                    ? "Click to toggle anomaly heatmap"
+                    : "Defect boxes are always shown"
+                }
               >
-                {displayMode === "overlay" && selectedOverlayUrl ? (
-                  <img
-                    src={selectedOverlayUrl}
-                    alt={`${selectedRecord.path} overlay`}
-                    className="w-full h-full object-contain"
-                  />
-                ) : selectedImageUrl ? (
-                  <img
-                    src={selectedImageUrl}
-                    alt={selectedRecord.path}
-                    className="w-full h-full object-contain"
-                  />
+                {shownImageUrl ? (
+                  <>
+                    <img
+                      ref={imageRef}
+                      src={shownImageUrl}
+                      alt={selectedRecord.path}
+                      className="w-full h-full object-contain"
+                      onLoad={(e) => {
+                        setImageSize({
+                          width: e.currentTarget.naturalWidth,
+                          height: e.currentTarget.naturalHeight,
+                        });
+                      }}
+                    />
+
+                    {showBoxOverlay && (
+                      <svg
+                        className="absolute inset-0 w-full h-full pointer-events-none"
+                        viewBox={`0 0 ${imageSize.width} ${imageSize.height}`}
+                        preserveAspectRatio="xMidYMid meet"
+                      >
+                        {selectedDetections.map((det, index) => {
+                          const [x, y, w, h] = det.bbox;
+                          const color = getLabelColor(det.label);
+                          const label = `${det.label} ${Math.round(
+                            det.score * 100
+                          )}%`;
+
+                          return (
+                            <g key={`${det.label}-${index}`}>
+                              <rect
+                                x={x}
+                                y={y}
+                                width={w}
+                                height={h}
+                                fill="none"
+                                stroke={color}
+                                strokeWidth={3}
+                              />
+
+                              <rect
+                                x={x}
+                                y={Math.max(0, y - 24)}
+                                width={Math.max(90, label.length * 8)}
+                                height={24}
+                                fill={color}
+                                opacity={0.95}
+                              />
+
+                              <text
+                                x={x + 6}
+                                y={Math.max(16, y - 7)}
+                                fontSize={14}
+                                fontWeight={700}
+                                fill="#ffffff"
+                              >
+                                {label}
+                              </text>
+                            </g>
+                          );
+                        })}
+                      </svg>
+                    )}
+                  </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <div className="text-center space-y-2">
                       <ImageIcon className="w-10 h-10 text-muted-foreground/30 mx-auto" />
                       <p className="text-sm text-muted-foreground font-mono font-medium">
                         {selectedRecord.path}
-                      </p>
-                      <p className="text-xs text-muted-foreground/60 font-medium">
-                        Mode:{" "}
-                        {displayMode === "image"
-                          ? "Base Image"
-                          : "Image + Overlay"}
                       </p>
                     </div>
                   </div>
@@ -722,7 +878,25 @@ const History = () => {
                     variant="secondary"
                     className="text-[11px] font-bold bg-[hsl(35,90%,60%)]/15 text-[hsl(35,90%,60%)] border-0"
                   >
-                    yolo
+                    Defect Detection
+                  </Badge>
+                )}
+
+                {selectedDetections.length > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="text-[11px] font-bold border-0"
+                  >
+                    {selectedDetections.length} boxes
+                  </Badge>
+                )}
+
+                {canToggleHeatmap && (
+                  <Badge
+                    variant="outline"
+                    className="text-[11px] font-bold"
+                  >
+                    {displayMode === "overlay" ? "heatmap" : "image"}
                   </Badge>
                 )}
               </div>

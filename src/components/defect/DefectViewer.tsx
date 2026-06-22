@@ -46,13 +46,13 @@ const DefectViewer = ({ frame, classMap, classStates, paused, onResumeLive }: De
                       top: `${box.y * 100}%`,
                       width: `${box.w * 100}%`,
                       height: `${box.h * 100}%`,
-                      borderColor: `hsl(${cls.color})`,
-                      boxShadow: `0 0 0 1px hsl(${cls.color} / 0.3)`,
+                      borderColor: cls.color,
+                      boxShadow: `0 0 0 1px ${cls.color}55`,
                     }}
                   >
                     <div
                       className="absolute -top-5 left-0 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-white whitespace-nowrap rounded-sm"
-                      style={{ background: `hsl(${cls.color})` }}
+                      style={{ background: cls.color }}
                     >
                       {cls.name} {(box.confidence * 100).toFixed(0)}%
                     </div>

@@ -275,7 +275,7 @@ const DefectSidebar = ({
                   <div className="flex items-center gap-2">
                     <span
                       className="text-[11px] font-mono font-semibold uppercase tracking-wider flex-1 truncate"
-                      style={{ color: enabled ? `hsl(${cls.color})` : "hsl(var(--muted-foreground))" }}
+                      style={{ color: enabled ? cls.color : "hsl(var(--muted-foreground))" }}
                     >
                       [{cls.name}]
                     </span>

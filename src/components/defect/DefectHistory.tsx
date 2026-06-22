@@ -11,7 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import type { DetectionClass, DetectionFrame } from "@/lib/defectMock";
 
-type QuickRange = "5m" | "1h" | "today" | "all";
+type QuickRange = "15m" | "30m" | "1h";
 
 interface DefectHistoryProps {
   frames: DetectionFrame[];
@@ -37,7 +37,7 @@ const DefectHistory = ({
   onOpenChange,
 }: DefectHistoryProps) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
-  const [quickRange, setQuickRange] = useState<QuickRange>("all");
+  const [quickRange, setQuickRange] = useState<QuickRange>("1h");
   const [selectedClassIds, setSelectedClassIds] = useState<Set<string>>(new Set());
   const [minConfidence, setMinConfidence] = useState(0);
 
@@ -72,20 +72,12 @@ const DefectHistory = ({
       }
       const inRange = (() => {
         switch (quickRange) {
-          case "5m":
-            return now - t <= 5 * 60 * 1000;
+          case "15m":
+            return now - t <= 15 * 60 * 1000;
+          case "30m":
+            return now - t <= 30 * 60 * 1000;
           case "1h":
             return now - t <= 60 * 60 * 1000;
-          case "today": {
-            const d = new Date(f.timestamp);
-            const today = new Date();
-            return (
-              d.getFullYear() === today.getFullYear() &&
-              d.getMonth() === today.getMonth() &&
-              d.getDate() === today.getDate()
-            );
-          }
-          case "all":
           default:
             return true;
         }
@@ -105,10 +97,10 @@ const DefectHistory = ({
   }, [frames, date, quickRange, selectedClassIds, minConfidence]);
 
   const ranges: { id: QuickRange; label: string }[] = [
-    { id: "5m", label: "Last 5 min" },
+    { id: "15m", label: "Last 15 min" },
+    { id: "30m", label: "Last 30 min" },
     { id: "1h", label: "Last 1 h" },
-    { id: "today", label: "Today" },
-    { id: "all", label: "All" },
+
   ];
 
   return (
@@ -203,7 +195,7 @@ const DefectHistory = ({
                   >
                     <span
                       className="w-2 h-2 rounded-full"
-                      style={{ background: `hsl(${cls.color})` }}
+                      style={{ background: cls.color }}
                     />
                     {cls.name}
                   </button>
@@ -283,7 +275,7 @@ const DefectHistory = ({
                         <span
                           key={cid}
                           className="px-1.5 py-0.5 rounded-md border text-[10px] font-mono leading-none"
-                          style={{ borderColor: `hsl(${cls.color})`, color: `hsl(${cls.color})` }}
+                          style={{ borderColor: cls.color, color: cls.color }}
                         >
                           {cls.name}
                         </span>

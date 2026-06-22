@@ -1,7 +1,7 @@
 export interface DetectionClass {
   id: string;
   name: string;
-  color: string; // hsl string like "0 80% 60%"
+  color: string;
 }
 
 export interface DetectionModel {
@@ -12,8 +12,9 @@ export interface DetectionModel {
 
 export interface DetectionBox {
   classId: string;
+  label?: string;
   confidence: number;
-  x: number; // normalized 0-1
+  x: number;
   y: number;
   w: number;
   h: number;
@@ -22,84 +23,46 @@ export interface DetectionBox {
 export interface DetectionFrame {
   id: number;
   timestamp: string;
+  date?: string;
+  time?: string;
   imageUrl: string;
   boxes: DetectionBox[];
 }
 
-export const MOCK_MODELS: DetectionModel[] = [
-  {
-    id: "surface-v1",
-    name: "Surface Defects v1",
-    classes: [
-      { id: "scratch", name: "Scratch", color: "0 80% 60%" },
-      { id: "dent", name: "Dent", color: "30 90% 55%" },
-      { id: "crack", name: "Crack", color: "280 70% 60%" },
-      { id: "stain", name: "Stain", color: "200 80% 55%" },
-      { id: "burn", name: "Burn Mark", color: "15 85% 50%" },
-    ],
-  },
-  {
-    id: "packaging-v2",
-    name: "Packaging v2",
-    classes: [
-      { id: "tear", name: "Tear", color: "340 75% 60%" },
-      { id: "missing-label", name: "Missing Label", color: "50 90% 55%" },
-      { id: "misprint", name: "Misprint", color: "160 65% 50%" },
-      { id: "seal-defect", name: "Seal Defect", color: "220 75% 60%" },
-    ],
-  },
-];
-
-const PLACEHOLDER_IMAGES = [
-  "https://picsum.photos/seed/defect1/640/640",
-  "https://picsum.photos/seed/defect2/640/640",
-  "https://picsum.photos/seed/defect3/640/640",
-  "https://picsum.photos/seed/defect4/640/640",
-  "https://picsum.photos/seed/defect5/640/640",
-];
-
-let nextId = 1;
-
-export function generateMockFrame(model: DetectionModel, timestamp?: Date): DetectionFrame {
-  const numBoxes = Math.floor(Math.random() * 5);
-  const boxes: DetectionBox[] = Array.from({ length: numBoxes }, () => {
-    const cls = model.classes[Math.floor(Math.random() * model.classes.length)];
-    const w = 0.1 + Math.random() * 0.3;
-    const h = 0.1 + Math.random() * 0.3;
-    const x = Math.random() * (1 - w);
-    const y = Math.random() * (1 - h);
-    return {
-      classId: cls.id,
-      confidence: 0.3 + Math.random() * 0.7,
-      x,
-      y,
-      w,
-      h,
-    };
-  });
-
-  return {
-    id: nextId++,
-    timestamp: (timestamp ?? new Date()).toISOString(),
-    imageUrl: PLACEHOLDER_IMAGES[Math.floor(Math.random() * PLACEHOLDER_IMAGES.length)],
-    boxes,
-  };
+export interface BackendDefectRecord {
+  id: number;
+  timestamp: string;
+  date?: string;
+  time?: string;
+  imageUrl?: string;
+  yoloReject?: boolean;
+  defects?: any[];
+  detections?: any[];
+  boxes?: any[];
 }
 
-/**
- * Generate `count` backdated mock frames spaced `intervalMs` apart, ending now.
- * Returned newest-first.
- */
-export function generateMockHistory(
-  model: DetectionModel,
-  count: number,
-  intervalMs: number
-): DetectionFrame[] {
-  const now = Date.now();
-  const frames: DetectionFrame[] = [];
-  for (let i = 0; i < count; i++) {
-    const ts = new Date(now - i * intervalMs);
-    frames.push(generateMockFrame(model, ts));
-  }
-  return frames;
+export function backendRecordToFrame(
+  record: BackendDefectRecord,
+  apiBase: string
+): DetectionFrame {
+  const rawBoxes = record.boxes ?? record.detections ?? record.defects ?? [];
+
+  return {
+    id: record.id,
+    timestamp: record.timestamp.replace(" ", "T"),
+    date: record.date,
+    time: record.time,
+    imageUrl: record.imageUrl
+    ? `${apiBase}${record.imageUrl}`
+    : `${apiBase}/api/defect/live/image?id=${record.id}`,
+    boxes: rawBoxes.map((b: any) => ({
+      classId: b.classId ?? b.label,
+      label: b.label ?? b.classId,
+      confidence: b.confidence ?? 0,
+      x: b.x ?? b.box?.x ?? 0,
+      y: b.y ?? b.box?.y ?? 0,
+      w: b.w ?? b.width ?? b.box?.width ?? 0,
+      h: b.h ?? b.height ?? b.box?.height ?? 0,
+    })),
+  };
 }

@@ -8,7 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import type { DetectionClass, DetectionFrame } from "@/lib/defectMock";
 
-type QuickRange = "1h" | "4h" | "8h";
+type QuickRange = "15m" | "30m" | "1h";
 
 interface DefectHistoryPanelProps {
   frames: DetectionFrame[];
@@ -54,7 +54,11 @@ const DefectHistoryPanel = ({
   const filtered = useMemo(() => {
     const now = Date.now();
     const windowMs =
-      quickRange === "1h" ? 60 * 60 * 1000 : quickRange === "4h" ? 4 * 60 * 60 * 1000 : 8 * 60 * 60 * 1000;
+    quickRange === "15m"
+      ? 15 * 60 * 1000
+      : quickRange === "30m"
+      ? 30 * 60 * 1000
+      : 60 * 60 * 1000;
     const out: { frame: DetectionFrame; qualifying: typeof frames[number]["boxes"] }[] = [];
     for (const f of frames) {
       const t = new Date(f.timestamp).getTime();
@@ -72,9 +76,9 @@ const DefectHistoryPanel = ({
   }, [frames, quickRange, selectedClassIds, minConfidence]);
 
   const ranges: { id: QuickRange; label: string }[] = [
+    { id: "15m", label: "Last 15 min" },
+    { id: "30m", label: "Last 30 min" },
     { id: "1h", label: "Last 1 h" },
-    { id: "4h", label: "Last 4 h" },
-    { id: "8h", label: "Last 8 h" },
   ];
 
   if (collapsed) {
@@ -174,7 +178,7 @@ const DefectHistoryPanel = ({
                 >
                   <span
                     className="w-2 h-2 rounded-full"
-                    style={{ background: `hsl(${cls.color})` }}
+                    style={{ background: cls.color }}
                   />
                   {cls.name}
                 </button>
@@ -250,7 +254,7 @@ const DefectHistoryPanel = ({
                       <span
                         key={cid}
                         className="px-1.5 py-0.5 rounded-md border text-[10px] font-mono leading-none"
-                        style={{ borderColor: `hsl(${cls.color})`, color: `hsl(${cls.color})` }}
+                        style={{ borderColor: cls.color, color: cls.color }}
                       >
                         {cls.name}
                       </span>
