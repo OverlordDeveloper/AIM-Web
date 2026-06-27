@@ -1,4 +1,4 @@
-import { Settings2, ChevronUp, ChevronDown } from "lucide-react";
+import { Settings2, ChevronUp, ChevronDown, Lightbulb } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import InspectionSlider from "@/components/InspectionSlider";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ export interface CameraSettings {
   contrast: number;
   width: number;
   height: number;
+  lights: boolean;
 }
 
 interface CameraSettingsPanelProps {
@@ -70,6 +71,24 @@ const CameraSettingsPanel = ({ settings, onUpdate }: CameraSettingsPanelProps) =
         }`}
       >
         <div className="px-4 py-2.5 flex gap-6 overflow-x-auto border-t border-border">
+          <div className="min-w-[64px] flex flex-col items-center justify-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => onUpdate("lights", !settings.lights)}
+              aria-pressed={settings.lights}
+              className={`h-9 w-9 rounded-md border flex items-center justify-center transition-all ${
+                settings.lights
+                  ? "border-amber-400/60 bg-amber-400/10 text-amber-300 shadow-[0_0_12px_-2px_hsl(45_100%_60%/0.6)]"
+                  : "border-border bg-secondary text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Lightbulb className="w-4 h-4" fill={settings.lights ? "currentColor" : "none"} />
+            </button>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+              Lights · {settings.lights ? "On" : "Off"}
+            </span>
+          </div>
+
           <div className="space-y-1.5 min-w-[140px]">
             <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
               Resolution
