@@ -23,6 +23,7 @@ const DEFAULT_CAMERA_SETTINGS: CameraSettings = {
   contrast: 1.2,
   width: 1280,
   height: 720,
+  lights: false,
 };
 
 const Index = () => {
